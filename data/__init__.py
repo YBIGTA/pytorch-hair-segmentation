@@ -2,7 +2,7 @@ from .figaro import FigaroDataset
 from torch.utils.data import DataLoader
 
 def get_loader(dataset, data_dir='./data/Figaro1k', train=True, batch_size=64, shuffle=True,
-        joint_transforms=None, image_transforms=None, mask_transforms=None):
+        joint_transforms=None, image_transforms=None, mask_transforms=None, num_workers=0):
     """
     Args:
         dataset (string): name of dataset to use
@@ -22,6 +22,6 @@ def get_loader(dataset, data_dir='./data/Figaro1k', train=True, batch_size=64, s
                             mask_transforms=mask_transforms)
     else:
         raise ValueError
-    loader = DataLoader(dset, batch_size = batch_size, shuffle = shuffle)
+    loader = DataLoader(dset, batch_size = batch_size, shuffle = shuffle, num_workers=num_workers)
 
     return loader

@@ -7,6 +7,7 @@ import logging
 import argparse
 
 import torch
+from utils.trainer_verbose import train_with_ignite
 
 logger = logging.getLogger('hair segmentation project')
 
@@ -29,12 +30,12 @@ def get_args():
     parser.add_argument('--trainable', type=bool, default=True)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--optimizer', type=str, default='adam')
+    parser.add_argument('--momentum',type=float, default=0.9)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
 
     args = parser.parse_args()
     args.use_gpu = torch.cuda.is_available()
 
-    breakable # juckgo
 
     return args
 
@@ -55,6 +56,20 @@ def main():
     logger.addHandler(file_handler)
 
     args = get_args()
+
+    train_with_ignite(adaptive_pool=args.adaptive_pool,
+                      networks=args.networks,
+                      scheduler=args.scheduler,
+                      batch_size=args.batch_size,
+                      description=args.description,
+                    epochs=args.epochs,
+                    lr=args.lr,
+                    trainable=args.trainable,
+                    num_workers=args.num_workers,
+                    optimizer=args.optimizer,
+                    use_pretrained=args.use_pretrained,
+                    momentum=args.momentum,
+                    logger=logger)
 
 if __name__ == '__main__':
     main()
