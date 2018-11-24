@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from data import get_loader
 from utils import update_state, save_ckpt_file
 from utils import joint_transforms as jnt_trnsf
+from utils import summarize_model
 from networks import get_network
 
 import torch
@@ -34,9 +35,8 @@ def get_scheduler(string, optimizer):
 
 
 # for torch-igniter
-def train_with_ignite(adaptive_pool, networks, scheduler, batch_size, description,
-        epochs, lr, momentum, trainable, num_workers,
-        optimizer, use_pretrained, logger):
+def train_with_ignite(networks, scheduler, batch_size, description, img_size,
+        epochs, lr, momentum,  num_workers, optimizer, use_pretrained, logger):
 
     from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
     from ignite.metrics import Loss
@@ -46,18 +46,22 @@ def train_with_ignite(adaptive_pool, networks, scheduler, batch_size, descriptio
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     num_class = description2num_class(description)
 
+    # building model
     model = get_network(networks, num_class)
+    
+    # log model summary
+    input_size = (3, img_size, img_size)
+    summarize_model(model, input_size, logger, batch_size, device)
 
     # TODO: these should be selectable
     loss = torch.nn.BCEWithLogitsLoss()
 
-    optimizer = get_optimizer(optimizer, model, lr, momentum)
-    scheduler = get_scheduler(scheduler, optimizer)
+    model_optimizer = get_optimizer(optimizer, model, lr, momentum)
+    lr_scheduler = get_scheduler(scheduler, model_optimizer)
 
     joint_transforms = jnt_trnsf.Compose([
-        jnt_trnsf.Resize(256),
+        jnt_trnsf.Resize(img_size),
         jnt_trnsf.RandomRotate(5),
-        jnt_trnsf.CenterCrop(224),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
 
@@ -94,7 +98,7 @@ def train_with_ignite(adaptive_pool, networks, scheduler, batch_size, descriptio
                              shuffle=False,
                              num_workers=num_workers)
 
-    trainer = create_supervised_trainer(model, optimizer, loss, device=device)
+    trainer = create_supervised_trainer(model, model_optimizer, loss, device=device)
     evaluator = create_supervised_evaluator(model,
                                             metrics={
                                                 'pix-acc': Accuracy(),
@@ -108,8 +112,9 @@ def train_with_ignite(adaptive_pool, networks, scheduler, batch_size, descriptio
 
     # make ckpt path
     ckpt_root = './ckpt/'
-    filename = '{network}_epoch_{epoch}.pth'
+    filename = '{network}_{optimizer}_lr_{lr}_epoch_{epoch}.pth'
     ckpt_path = os.path.join(ckpt_root, filename)
+
 
     @trainer.on(Events.ITERATION_COMPLETED)
     def log_training_loss(trainer):
@@ -138,13 +143,15 @@ def train_with_ignite(adaptive_pool, networks, scheduler, batch_size, descriptio
             trainer.state.epoch, metrics['pix-acc'], metrics['mean-iu'], metrics['loss']))
 
         # update scheduler
-        scheduler.step(metrics['loss'])
+        lr_scheduler.step(metrics['loss'])
 
         # update and save state
         update_state(model.state_dict(), state['train_loss'], metrics['loss'], metrics['pix-acc'], metrics['mean-iu'])
-        save_ckpt_file(
-            ckpt_path.format(network=networks, epoch=trainer.state.epoch),
-            state)
+        save_ckpt_file(ckpt_path.format(network=network, 
+                                        optimizer=model_optimizer, 
+                                        lr=lr, 
+                                        epoch=trainer.state.epoch),
+                       state)
 
     trainer.run(train_loader, max_epochs=epochs)
 
@@ -154,6 +161,3 @@ def train_with_ignite(adaptive_pool, networks, scheduler, batch_size, descriptio
 ## pytorch-torchsummary
 ## pytorch-visdom
 ## etc
-
-if __name__ == '__main__':
-    train_with_ignite()
