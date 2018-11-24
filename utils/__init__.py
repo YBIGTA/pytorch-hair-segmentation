@@ -27,8 +27,8 @@ def save_ckpt_file(ckpt_path, state):
     check_mkdir(os.path.split(ckpt_path)[0])
     with open(ckpt_path, 'wb') as fout:
         torch.save(state, fout)
-        
-        
+
+
 def summarize_model(model, input_size, logger, batch_size=-1, device="cuda"):
     """
     hard copied from https://github.com/sksq96/pytorch-summary/blob/master/torchsummary/torchsummary.py#L9

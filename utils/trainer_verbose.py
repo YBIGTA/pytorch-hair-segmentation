@@ -51,7 +51,7 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
     
     # log model summary
     input_size = (3, img_size, img_size)
-    summarize_model(model, input_size, logger, batch_size, device)
+    summarize_model(model.to(device), input_size, logger, batch_size, device)
 
     # TODO: these should be selectable
     loss = torch.nn.BCEWithLogitsLoss()
