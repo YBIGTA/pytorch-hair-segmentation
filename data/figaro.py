@@ -1,10 +1,11 @@
 import os
 from PIL import Image
+import torch
 from torch.utils.data import Dataset
 
 class FigaroDataset(Dataset):
     def __init__(self, root_dir, train=True, joint_transforms=None,
-            image_transforms=None, mask_transforms=None):
+                 image_transforms=None, mask_transforms=None):
         '''
         Args:
             root_dir (str): root directory of dataset
@@ -39,7 +40,7 @@ class FigaroDataset(Dataset):
         if self.mask_transforms is not None:
             mask = self.mask_transforms(mask)
 
-        return img, mask, class_label
+        return img, mask #, class_label
 
     def __len__(self):
         return len(self.mask_path_list)
@@ -68,6 +69,6 @@ class FigaroDataset(Dataset):
             return 4
         elif 750 < idx <= 900:
             return 5
-        elif 450 < idx <= 600:
+        elif 900 < idx <= 1050:
             return 6
         raise ValueError

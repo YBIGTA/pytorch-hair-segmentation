@@ -43,16 +43,6 @@ class Resize(object):
                     mask.resize((self.w, self.h), Image.BILINEAR))
 
 
-class RandomHorizontalFlip(object):
-    def __init__(self, p=0.5):
-        self.p = p
-
-    def __call__(self, img, mask):
-        if random.random() < self.p:
-            return img.transpose(Image.FLIP_LEFT_RIGHT), mask.transpose(Image.FLIP_LEFT_RIGHT)
-        return img, mask
-
-
 class RandomCrop(object):
     def __init__(self, size, padding=0):
         if isinstance(size, numbers.Number):
