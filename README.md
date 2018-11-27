@@ -9,10 +9,12 @@ sh data/figaro.sh #<directory>
 ### Running trainer
 
 ```bash
-# run this in root
+# sample execution
 
 python3 main.py \
   --networks segnet \
+  --dataset figaro \
+  --data_dir ./data/Figaro1k \
   --scheduler ReduceLROnPlateau \
   --batch_size 4 \
   --epochs 100 \
