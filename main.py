@@ -24,6 +24,8 @@ def get_args():
 
     parser = argparse.ArgumentParser(description='Hair Segmentation')
     parser.add_argument('--networks', default='resnet101')
+    parser.add_argument('--dataset', default='figaro')
+    parser.add_argument('--data_dir', default='./data/Figaro1k')
     parser.add_argument('--scheduler', default='ReduceLROnPlateau')
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--description', type=str, default='binary_class')
@@ -31,8 +33,8 @@ def get_args():
     parser.add_argument('--lr', default=0.001, type=float)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--optimizer', type=str, default='adam')
-    parser.add_argument('--momentum',type=float, default=0.9)
-    parser.add_argument('--img_size',type=int, default=256)
+    parser.add_argument('--momentum', type=float, default=0.9)
+    parser.add_argument('--img_size', type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
 
     args = parser.parse_args()
@@ -65,6 +67,8 @@ def main():
     logger.info('arguments:{}'.format(" ".join(sys.argv)))
 
     train_with_ignite(networks=args.networks,
+                      dataset=args.dataset,
+                      data_dir=args.data_dir,
                       scheduler=args.scheduler,
                       batch_size=args.batch_size,
                       description=args.description,
@@ -76,6 +80,7 @@ def main():
                       momentum=args.momentum,
                       img_size=args.img_size,
                       logger=logger)
+
 
 if __name__ == '__main__':
     main()

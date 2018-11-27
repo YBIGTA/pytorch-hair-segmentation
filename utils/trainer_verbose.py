@@ -35,8 +35,9 @@ def get_scheduler(string, optimizer):
 
 
 # for torch-igniter
-def train_with_ignite(networks, scheduler, batch_size, description, img_size,
-        epochs, lr, momentum,  num_workers, optimizer, use_pretrained, logger):
+def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, description,
+                      img_size, epochs, lr, momentum,  num_workers, optimizer,
+                      use_pretrained, logger):
 
     from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
     from ignite.metrics import Loss
@@ -80,7 +81,8 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
         std_trnsf.ToTensor()
         ])
 
-    train_loader = get_loader(dataset='figaro',
+    train_loader = get_loader(dataset=dataset,
+                              data_dir=data_dir,
                               train=True,
                               joint_transforms=joint_transforms,
                               image_transforms=train_image_transforms,
@@ -89,7 +91,8 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
                               shuffle=False,
                               num_workers=num_workers)
 
-    test_loader = get_loader(dataset='figaro',
+    test_loader = get_loader(dataset=dataset,
+                             data_dir=data_dir,
                              train=False,
                              joint_transforms=joint_transforms,
                              image_transforms=test_image_transforms,
@@ -99,6 +102,7 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
                              num_workers=num_workers)
 
     trainer = create_supervised_trainer(model, model_optimizer, loss, device=device)
+
     evaluator = create_supervised_evaluator(model,
                                             metrics={
                                                 'pix-acc': Accuracy(),
@@ -114,7 +118,6 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
     ckpt_root = './ckpt/'
     filename = '{network}_{optimizer}_lr_{lr}_epoch_{epoch}.pth'
     ckpt_path = os.path.join(ckpt_root, filename)
-
 
     @trainer.on(Events.ITERATION_COMPLETED)
     def log_training_loss(trainer):
@@ -132,7 +135,11 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
             trainer.state.epoch, metrics['pix-acc'], metrics['mean-iu'], metrics['loss']))
 
         # update state
-        update_state(model.state_dict(), metrics['loss'], state['val_loss'], state['val_pix_acc'], state['val_miu'])
+        update_state(weight=model.state_dict(),
+                     train_loss=metrics['loss'],
+                     val_loss=state['val_loss'],
+                     val_pix_acc=state['val_pix_acc'],
+                     val_miu=state['val_miu'])
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_validation_results(trainer):
@@ -146,12 +153,17 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
         lr_scheduler.step(metrics['loss'])
 
         # update and save state
-        update_state(model.state_dict(), state['train_loss'], metrics['loss'], metrics['pix-acc'], metrics['mean-iu'])
-        save_ckpt_file(ckpt_path.format(network=network, 
-                                        optimizer=model_optimizer, 
-                                        lr=lr, 
-                                        epoch=trainer.state.epoch),
-                       state)
+        update_state(weight=model.state_dict(),
+                     train_loss=state['train_loss'],
+                     val_loss=metrics['loss'],
+                     val_pix_acc=metrics['pix-acc'],
+                     val_miu=metrics['mean-iu'])
+
+        path = ckpt_path.format(network=networks,
+                                optimizer=model_optimizer,
+                                lr=lr,
+                                epoch=trainer.state.epoch)
+        save_ckpt_file(path, state)
 
     trainer.run(train_loader, max_epochs=epochs)
 
