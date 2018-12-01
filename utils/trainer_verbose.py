@@ -160,7 +160,7 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
                      val_miu=metrics['mean-iu'])
 
         path = ckpt_path.format(network=networks,
-                                optimizer=model_optimizer,
+                                optimizer=optimizer,
                                 lr=lr,
                                 epoch=trainer.state.epoch)
         save_ckpt_file(path, state)
