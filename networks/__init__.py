@@ -1,7 +1,7 @@
 from .segnet import SegNet
 from .unet import Unet
 from .ternausnet import TernausNet
-from .deeplab_v3 import Deeplab_v3_plus
+from .deeplab_v3_plus import Deeplab_v3_plus
 
 
 def get_network(name, num_class):
