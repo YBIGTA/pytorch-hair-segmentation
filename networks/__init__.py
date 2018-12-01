@@ -12,7 +12,7 @@ def get_network(name, num_class):
         return Unet(num_class)
     elif name == 'ternausnet':
         return TernausNet(num_class)
-    elif name == 'deeplabv3+':
+    elif name == 'deeplabv3plus':
         return Deeplab_v3_plus(input_channels = 3, n_classes = num_class)
     raise ValueError
 
