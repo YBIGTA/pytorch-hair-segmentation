@@ -1,4 +1,5 @@
 from .figaro import FigaroDataset
+from .lfw import LfwDataset
 from torch.utils.data import DataLoader
 
 def get_loader(dataset, data_dir='./data/Figaro1k', train=True, batch_size=64, shuffle=True,
@@ -16,12 +17,19 @@ def get_loader(dataset, data_dir='./data/Figaro1k', train=True, batch_size=64, s
 
     if dataset.lower() == 'figaro':
         dset = FigaroDataset(root_dir=data_dir,
-                            train=train,
-                            joint_transforms=joint_transforms,
-                            image_transforms=image_transforms,
-                            mask_transforms=mask_transforms)
+                             train=train,
+                             joint_transforms=joint_transforms,
+                             image_transforms=image_transforms,
+                             mask_transforms=mask_transforms)
+
+    elif dataset.lower() == 'lfw':
+        dset = LfwDataset(root_dir=data_dir,
+                          train=train,
+                          joint_transforms=joint_transforms,
+                          image_transforms=image_transforms,
+                          mask_transforms=mask_transforms)
     else:
         raise ValueError
-    loader = DataLoader(dset, batch_size = batch_size, shuffle = shuffle, num_workers=num_workers)
+    loader = DataLoader(dset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
     return loader

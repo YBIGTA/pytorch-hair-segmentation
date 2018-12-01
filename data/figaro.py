@@ -1,6 +1,5 @@
 import os
 from PIL import Image
-import torch
 from torch.utils.data import Dataset
 import cv2
 import numpy as np
@@ -8,11 +7,13 @@ import numpy as np
 class FigaroDataset(Dataset):
     def __init__(self, root_dir, train=True, joint_transforms=None,
                  image_transforms=None, mask_transforms=None, gray_image=False):
-        '''
+        """
         Args:
             root_dir (str): root directory of dataset
-            transforms (torchvision.transforms.Compose): tranformation on both data and target
-        '''
+            joint_transforms (torchvision.transforms.Compose): tranformation on both data and target
+            image_transforms (torchvision.transforms.Compose): tranformation only on data
+            mask_transforms (torchvision.transforms.Compose): tranformation only on target
+        """
         mode = 'Training' if train else 'Testing'
         img_dir = os.path.join(root_dir,'Original', mode)
         mask_dir = os.path.join(root_dir, 'GT', mode)
