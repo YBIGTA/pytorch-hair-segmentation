@@ -1,7 +1,7 @@
 from .segnet import SegNet
 from .unet import Unet
 from .ternausnet import TernausNet
-from .deeplab_v3_plus import Deeplab_v3_plus
+from .deeplab_v3_plus import DeepLab
 
 
 def get_network(name, num_class):
@@ -13,6 +13,6 @@ def get_network(name, num_class):
     elif name == 'ternausnet':
         return TernausNet(num_class)
     elif name == 'deeplabv3plus':
-        return Deeplab_v3_plus(input_channels = 3, n_classes = num_class)
+        return Deeplab_v3_plus(return_with_logits = True)
     raise ValueError
 
