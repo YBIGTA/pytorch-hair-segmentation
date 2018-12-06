@@ -123,3 +123,9 @@ class MobileNetV2(nn.Module):
                 n = m.weight.size(1)
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
+
+
+if __name__ == '__main__':
+    net = MobileNetV2()
+    import torchsummary as p
+    p.summary(net, (3,224,224))

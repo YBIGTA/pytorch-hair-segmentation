@@ -88,7 +88,7 @@ class Decoder(nn.Module):
             Inverter(cmid, cmid),
             Inverter(cmid, cmid),
             PointwiseConvolution(cmid, cout),
-            nn.Softmax(dim=1)
+            nn.Sigmoid()
         )
         
     def forward(self, x):
@@ -112,6 +112,7 @@ class FCN(nn.Module):
 
 if __name__ == '__main__':
     import time
+    import torchsummary
 
     model = FCN()
     tensor = torch.randn((1,3,224,224))    
@@ -122,3 +123,4 @@ if __name__ == '__main__':
     print(t1 - t0)
     print(out.shape)
     print(model)
+    torchsummary.summary(model, (3,224,224))
