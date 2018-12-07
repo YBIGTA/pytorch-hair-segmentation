@@ -129,7 +129,7 @@ class MobileMattingFCN(nn.Module):
 
         self.red = nn.Sequential(
             nn.Conv2d(64, 1, 1),
-            nn.Softmax2d()
+            nn.Sigmoid()
         )
 
         #self.fc = nn.Linear(1024, 1000)
@@ -169,12 +169,12 @@ class MobileMattingFCN(nn.Module):
         # hell baidu - https://github.com/marvis/pytorch-mobilenet
 
 class HairMattingLoss(nn.modules.loss._Loss):
-    def __init__(self, ratio_of_Gradient=0.5, ):
+    def __init__(self, ratio_of_Gradient=0.5):
         super(HairMattingLoss, self).__init__()
         self.ratio_of_gradient = ratio_of_Gradient
     
     def forward(self, pred, true, image):
-        sobel_kernel_x = torch.Tensor([[1, 0, -1],
+        sobel_kernel_x = torch.FloatTensor([[1, 0, -1],
                 [2, 0, -2],
                 [1, 0, -1]])
         sobel_kernel_x = sobel_kernel_x.view((1,1,3,3))
@@ -182,7 +182,7 @@ class HairMattingLoss(nn.modules.loss._Loss):
         I_x = F.conv2d(image, sobel_kernel_x)
         G_x = F.conv2d(pred, sobel_kernel_x)
 
-        sobel_kernel_y = torch.Tensor([[1, 2, 1],
+        sobel_kernel_y = torch.FloatTensor([[1, 2, 1],
                         [0, 0, 0],
                         [-1, -2, -1]])
         sobel_kernel_y = sobel_kernel_y.view((1,1,3,3))

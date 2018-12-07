@@ -7,10 +7,12 @@ import pickle
 import logging
 import argparse
 
-from utils.trainer_verbose import train_with_ignite
+from utils.trainer_verbose import train_with_ignite, train_without_ignite
 from utils import check_mkdir
 
 import torch
+
+from networks import mobile_hair
 
 logger = logging.getLogger('hair segmentation project')
 
@@ -34,6 +36,7 @@ def get_args():
     parser.add_argument('--momentum',type=float, default=0.9)
     parser.add_argument('--img_size',type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
+    parser.add_argument('--no_ignite', type=bool, default=True)
 
     args = parser.parse_args()
 
@@ -63,8 +66,41 @@ def main():
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
     logger.info('arguments:{}'.format(" ".join(sys.argv)))
+    
+    if args.no_ignite:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
+        model = mobile_hair.MobileMattingFCN()
+        
+        if torch.cuda.is_available():
+            if torch.cuda.device_count() > 1:
+                print('multi gpu')
+                model = torch.nn.DataParallel(model)
+        
+        model.to(device)
+        
+        loss = mobile_hair.HairMattingLoss()
+        
+        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad,model.parameters()), 
+                                     lr=0.0001, betas=(0.9, 0.999))
+        
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+        
+        train_without_ignite(model, 
+                             loss,
+                             batch_size=args.batch_size,
+                             img_size=args.img_size,
+                             epochs=args.epochs,
+                             lr=args.lr,
+                             num_workers=args.num_workers,
+                             optimizer=optimizer,
+                             logger=logger,
+                             gray_image=True,
+                             scheduler=scheduler
+                            )
+    
 
-    train_with_ignite(networks=args.networks,
+    else: train_with_ignite(networks=args.networks,
                       scheduler=args.scheduler,
                       batch_size=args.batch_size,
                       description=args.description,
