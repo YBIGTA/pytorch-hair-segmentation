@@ -2,6 +2,8 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+import numpy as np
+
 from data import get_loader
 from utils import update_state, save_ckpt_file
 from utils import joint_transforms as jnt_trnsf
@@ -265,9 +267,9 @@ def train_without_ignite(model, loss, batch_size, img_size,
                 if viz: vis.images(imgs, opts=dict(title=f'pred img for {epoch}-th iter'))
                 logger.info(f"Test Results - Epoch: {epoch} Avg-loss: {epoch_loss:.3f}")
                 
-            if scheduler: scheduler.step(epoch_loss)
+                if scheduler: scheduler.step(epoch_loss)
             
-            torch.set_grad_enabled(prev_grad_state)
+                torch.set_grad_enabled(prev_grad_state)
             
             
             
