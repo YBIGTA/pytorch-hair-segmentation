@@ -1,6 +1,7 @@
 from .segnet import SegNet
 from .unet import Unet
 from .ternausnet import TernausNet
+from .pspnet import PSPNetWithSqueezeNet
 
 
 def get_network(name, num_class):
@@ -11,5 +12,7 @@ def get_network(name, num_class):
         return Unet(num_class)
     elif name == 'ternausnet':
         return TernausNet(num_class)
+    elif name == 'pspnet':
+        return PSPNetWithSqueezeNet(num_class)
     raise ValueError
 
