@@ -1,24 +1,23 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torchvision import models
+
 
 class ConvLayer(nn.Module):
-    def __init__(self, in_features, out_features, is_output_layer=False):
-        super(ConvLayer,self).__init__()
-        layers = []
-        layers.append(nn.Conv2d(in_features,out_features,kernel_size=3, stride=1))
+    def __init__(self, in_features, out_features):
+        super(ConvLayer, self).__init__()
+        layers = list()
+        layers.append(nn.Conv2d(in_features, out_features, kernel_size=3, stride=1))
         layers.append(nn.BatchNorm2d(out_features))
         layers.append(nn.ReLU(inplace=True))
-        layers.append(nn.Conv2d(out_features,out_features,kernel_size=3, stride=1))
+        layers.append(nn.Conv2d(out_features, out_features, kernel_size=3, stride=1))
         layers.append(nn.BatchNorm2d(out_features))
         layers.append(nn.ReLU(inplace=True))
 
         self.layers = nn.Sequential(*layers)
 
-    def forward(self,input):
-        output = self.layers(input)
-        return output
+    def forward(self, input):
+        return self.layers(input)
 
 
 class Unet(nn.Module):
@@ -55,7 +54,7 @@ class Unet(nn.Module):
 
         for i in range(3, -1, -1):
             x = self.upconv_layers[i](x)
-            x = torch.cat([x, F.upsample(features[i], size=x.size()[2:],mode='bilinear')],dim=1 )
+            x = torch.cat([x, F.upsample(features[i], size=x.size()[2:], mode='bilinear')], dim=1)
             x = self.decoder_conv_layers[i](x)
 
         x = self.conv1x1(x)

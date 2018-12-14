@@ -4,6 +4,8 @@ from ignite.metrics.metric import Metric
 
 class Accuracy(Metric):
     """
+    hard copied from https://pytorch.org/ignite/_modules/ignite/metrics/accuracy.html
+
     Calculates the accuracy.
 
     - `update` must receive output of the form `(y_pred, y)`.
@@ -54,9 +56,12 @@ class Accuracy(Metric):
         return self._num_correct / self._num_examples
 
 
-class MeanIU(Metric):
+class IoU(Metric):
+    """
+    Calculates intersection over union for only foreground (hair)
+    """
     def __init__(self, thrs):
-        super(MeanIU, self).__init__()
+        super(IoU, self).__init__()
         self.thrs = thrs
         self._num_intersect = 0
         self._num_union = 0
@@ -77,8 +82,7 @@ class MeanIU(Metric):
         self._num_intersect = torch.sum(intersect).item()
         self._num_union = torch.sum(union).item()
 
-
     def compute(self):
         if self._num_union == 0:
-            raise ValueError('MeanIU must have at least one example before it can be computed')
+            raise ValueError('IoU must have at least one example before it can be computed')
         return self._num_intersect / self._num_union

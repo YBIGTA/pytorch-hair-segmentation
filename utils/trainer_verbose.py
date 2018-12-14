@@ -12,12 +12,6 @@ import torch
 import torchvision.transforms as std_trnsf
 
 
-def description2num_class(d):
-    if d == 'binary_class':
-        return 1
-    return 7
-
-
 def get_optimizer(string, model, lr, momentum):
     string = string.lower()
     if string == 'adam':
@@ -27,45 +21,38 @@ def get_optimizer(string, model, lr, momentum):
     raise ValueError
 
 
-def get_scheduler(string, optimizer):
-    string = string.lower()
-    if string == 'reducelronplateau':
-        return torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
-    raise ValueError
-
-
-# for torch-igniter
-def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, description,
-                      img_size, epochs, lr, momentum,  num_workers, optimizer,
-                      use_pretrained, logger):
+def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
+                      epochs, lr, momentum,  num_workers, optimizer, logger):
 
     from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
     from ignite.metrics import Loss
-    from utils.metrics import Accuracy, MeanIU
+    from utils.metrics import Accuracy, IoU
 
     # device
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    num_class = description2num_class(description)
 
-    # building model
-    model = get_network(networks, num_class)
+    # build model
+    model = get_network(networks)
     
     # log model summary
     input_size = (3, img_size, img_size)
     summarize_model(model.to(device), input_size, logger, batch_size, device)
 
-    # TODO: these should be selectable
+    # build loss
     loss = torch.nn.BCEWithLogitsLoss()
 
-    model_optimizer = get_optimizer(optimizer, model, lr, momentum)
-    lr_scheduler = get_scheduler(scheduler, model_optimizer)
+    # build optimizer and scheduler
+    optimizer = get_optimizer(optimizer, model, lr, momentum)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
+    # transforms on both image and mask
     joint_transforms = jnt_trnsf.Compose([
         jnt_trnsf.Resize(img_size),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
 
+    # transforms only on images
     train_image_transforms = std_trnsf.Compose([
         std_trnsf.ColorJitter(0.05, 0.05, 0.05, 0.05),
         std_trnsf.ToTensor(),
@@ -77,10 +64,12 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
         std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
+    # transforms only on mask
     mask_transforms = std_trnsf.Compose([
         std_trnsf.ToTensor()
         ])
 
+    # build train / test loader
     train_loader = get_loader(dataset=dataset,
                               data_dir=data_dir,
                               train=True,
@@ -101,17 +90,18 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
                              shuffle=False,
                              num_workers=num_workers)
 
-    trainer = create_supervised_trainer(model, model_optimizer, loss, device=device)
+    # build trainer / evaluator with ignite
+    trainer = create_supervised_trainer(model, optimizer, loss, device=device)
 
     evaluator = create_supervised_evaluator(model,
                                             metrics={
                                                 'pix-acc': Accuracy(),
-                                                'mean-iu': MeanIU(0.5),
+                                                'mean-iu': IoU(0.5),
                                                 'loss': Loss(loss)
                                                 },
                                             device=device)
 
-    # initialize state variable
+    # initialize state variable for checkpoint
     state = update_state(model.state_dict(), 0, 0, 0, 0)
 
     # make ckpt path
@@ -119,6 +109,7 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
     filename = '{network}_{optimizer}_lr_{lr}_epoch_{epoch}.pth'
     ckpt_path = os.path.join(ckpt_root, filename)
 
+    # execution after every training iteration
     @trainer.on(Events.ITERATION_COMPLETED)
     def log_training_loss(trainer):
         num_iter = (trainer.state.iteration - 1) % len(train_loader) + 1
@@ -126,9 +117,10 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
             logger.info("Epoch[{}] Iter[{:03d}] Loss: {:.2f}".format(
                 trainer.state.epoch, num_iter, trainer.state.output))
 
+    # execution after every training epoch
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(trainer):
-        # evaluate training set
+        # evaluate on training set
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
         logger.info("Training Results - Epoch: {}  Pix-acc: {:.3f} MeanIU: {:.3f} Avg-loss: {:.3f}".format(
@@ -141,6 +133,7 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
                      val_pix_acc=state['val_pix_acc'],
                      val_miu=state['val_miu'])
 
+    # execution after every epoch
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_validation_results(trainer):
         # evaluate test(validation) set
@@ -166,10 +159,3 @@ def train_with_ignite(networks, scheduler, dataset, data_dir, batch_size, descri
         save_ckpt_file(path, state)
 
     trainer.run(train_loader, max_epochs=epochs)
-
-
-# 
-
-## pytorch-torchsummary
-## pytorch-visdom
-## etc
