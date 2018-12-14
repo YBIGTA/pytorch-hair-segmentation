@@ -177,20 +177,17 @@ def train_without_ignite(model, loss, batch_size, img_size,
     data_loader = {}
     
     joint_transforms = jnt_trnsf.Compose([
-        jnt_trnsf.Resize(img_size),
+        jnt_trnsf.RandomCrop(480),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
 
     train_image_transforms = std_trnsf.Compose([
-        std_trnsf.ColorJitter(0.05, 0.05, 0.05, 0.05),
-        std_trnsf.ToTensor(),
-        std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        std_trnsf.ToTensor()
         ])
 
     test_image_transforms = std_trnsf.Compose([
-        std_trnsf.ToTensor(),
-        std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        std_trnsf.ToTensor()
         ])
 
     mask_transforms = std_trnsf.Compose([
@@ -209,7 +206,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
 
     data_loader['test'] = get_loader(dataset='figaro',
                              train=False,
-                             joint_transforms=joint_transforms,
+                             joint_transforms=None,
                              image_transforms=test_image_transforms,
                              mask_transforms=mask_transforms,
                              batch_size=1,

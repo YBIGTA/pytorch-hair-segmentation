@@ -172,29 +172,37 @@ class HairMattingLoss(nn.modules.loss._Loss):
     def __init__(self, ratio_of_Gradient=0.0):
         super(HairMattingLoss, self).__init__()
         self.ratio_of_gradient = ratio_of_Gradient
+
+        self.bce_loss = nn.BCELoss()
     
     def forward(self, pred, true, image):
-        sobel_kernel_x = torch.FloatTensor([[1, 0, -1],
-                [2, 0, -2],
-                [1, 0, -1]])
-        sobel_kernel_x = sobel_kernel_x.view((1,1,3,3))
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        loss2 = None
+        if self.ratio_of_gradient > 0:
+            sobel_kernel_x = torch.Tensor(
+                        [[1.0, 0.0, -1.0],
+                        [2.0, 0.0, -2.0],
+                        [1.0, 0.0, -1.0]]).to(device)
+            sobel_kernel_x = sobel_kernel_x.view((1,1,3,3))
 
-        I_x = F.conv2d(image, sobel_kernel_x)
-        G_x = F.conv2d(pred, sobel_kernel_x)
+            I_x = F.conv2d(image, sobel_kernel_x)
+            G_x = F.conv2d(pred, sobel_kernel_x)
 
-        sobel_kernel_y = torch.FloatTensor([[1, 2, 1],
-                        [0, 0, 0],
-                        [-1, -2, -1]])
-        sobel_kernel_y = sobel_kernel_y.view((1,1,3,3))
+            sobel_kernel_y = torch.Tensor(
+                        [[1.0, 2.0, 1.0],
+                        [0.0, 0.0, 0.0],
+                        [-1.0, -2.0, -1.0]]).to(device)
+            sobel_kernel_y = sobel_kernel_y.view((1,1,3,3))
 
-        I_y = F.conv2d(image, sobel_kernel_y)
-        G_y = F.conv2d(pred, sobel_kernel_y)
+            I_y = F.conv2d(image, sobel_kernel_y)
+            G_y = F.conv2d(pred, sobel_kernel_y)
 
-        G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+            G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
 
-        loss2 = torch.sum(torch.mul(G, 1 - torch.pow(I_x*G_x + I_y*G_y,2)))/torch.sum(G) + 1e-6
-        loss = F.binary_cross_entropy_with_logits(pred, true)
+            loss2 = torch.sum(torch.mul(G, 1 - torch.pow(I_x*G_x + I_y*G_y,2)))/torch.sum(G) + 1e-6
+        
+        loss = self.bce_loss(pred, true)
 
-        print('bce', loss.item(), 'term', loss2.item())
+        print('bce', loss.item(), 'term', loss2)
 
-        return loss + self.ratio_of_gradient * loss2
+        return loss
