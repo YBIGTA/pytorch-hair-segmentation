@@ -37,6 +37,7 @@ def get_args():
     parser.add_argument('--img_size',type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
     parser.add_argument('--no_ignite', type=bool, default=True)
+    parser.add_argument('--visdom', type=bool, default=False)
 
     args = parser.parse_args()
 
@@ -96,7 +97,8 @@ def main():
                              optimizer=optimizer,
                              logger=logger,
                              gray_image=True,
-                             scheduler=scheduler
+                             scheduler=scheduler,
+                             viz=args.visdom
                             )
     
 
