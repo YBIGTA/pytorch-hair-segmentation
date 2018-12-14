@@ -1,6 +1,6 @@
 # Semantic Segmentation
- Semantic Segmentation이란, 이미지를 픽셀별로 분류(Classification)하는 것입니다.
- <br>아래의 그림은 __Semantic Segmentation__의 예시 중 하나입니다.
+ **Semantic Segmentation**이란, 이미지를 픽셀별(pixel-wise)로 분류(Classification)하는 것입니다.
+ <br>아래의 그림은 Semantic Segmentation의 예시 중 하나입니다.
  
  ![FCN](https://i.ibb.co/YhdKdd5/ss.png)
 ※ 사진 출처 : https://www.jeremyjordan.me/semantic-segmentation/
@@ -9,7 +9,7 @@
 
 ## 활용
 
-Semantic Segmentation은 매우 다양한 분야에서 사용되고 있습니다. 대표적인 예로 자율 주행 자동차에서 Semantic Segmentation은 핵심적인 역할을 합니다.
+Semantic Segmentation은 매우 다양한 분야에서 사용되고 있습니다. 대표적인 예로 **자율 주행 자동차**에서 Semantic Segmentation은 핵심적인 역할을 합니다.
 
 ![Drive](https://i.ibb.co/TkZYvrD/figure9.png)
 ※ 사진 출처 : https://devblogs.nvidia.com/image-segmentation-using-digits-5/
@@ -21,12 +21,12 @@ Semantic Segmentation은 매우 다양한 분야에서 사용되고 있습니다
 ![comparison](https://i.ibb.co/0yL6Yjf/is.png)
 ※ 사진 출처 : http://slazebni.cs.illinois.edu/spring18/lec25_deep_segmentation.pdf
 
-Semantic Segmentation과 Instance Segmentation의 차이를 잘 보여주고 있는 예시입니다. 위의 그림에서 중간에 위치한 Semantic Segmentation의 경우, 각 픽셀을 사람(핑크색)과 배경(검은색) 중에 어떤 클래스에 속하는지 분류하고 있습니다. 이와 달리, 오른쪽에 위치한 Instance Segmentation은 사람과 배경을 구분해줄 뿐만 아니라 사람끼리도 구분해주고 있는 것을 확인할 수 있습니다.
+Semantic Segmentation과 Instance Segmentation의 차이를 잘 보여주고 있는 예시입니다. 위의 그림에서 중간에 위치한 **Semantic Segmentation**의 경우, 각 픽셀을 사람(핑크색)과 배경(검은색) 중에 어떤 클래스에 속하는지 분류하고 있습니다. 이와 달리, 오른쪽에 위치한 **Instance Segmentation**은 사람과 배경을 구분해줄 뿐만 아니라 사람끼리도 구분해주고 있는 것을 확인할 수 있습니다.
  즉, Semantic Segmentation은 단순히 각각의 픽셀이 어떤 클래스에 속하는지 분류하는 것에 그치는 반면에 Instance Segmentation은 동일한 클래스에 속하더라도 각각의 사물을 개별적으로 구분해줍니다.
  
 ## 대표적인 논문
 
-Semantic Segmentation 분야의 대표적은 논문들은 아래와 같습니다.
+**Semantic Segmentation** 분야의 대표적은 논문들은 아래와 같습니다.
 
  1. FCN (2014) : https://arxiv.org/abs/1411.4038
  2. U-Net (2015) : https://arxiv.org/abs/1505.04597
