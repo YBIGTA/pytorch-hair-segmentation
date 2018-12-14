@@ -1,5 +1,6 @@
 # Semantic Segmentation
- Semantic Segmentation이란, 이미지를 픽셀별로 분류(Classification)하는 것입니다. 아래의 그림은 Semantic Segmentation의 예시 중 하나입니다.
+ Semantic Segmentation이란, 이미지를 픽셀별로 분류(Classification)하는 것입니다.
+ <br>아래의 그림은 __Semantic Segmentation__의 예시 중 하나입니다.
  
  ![FCN](https://i.ibb.co/YhdKdd5/ss.png)
 ※ 사진 출처 : https://www.jeremyjordan.me/semantic-segmentation/
