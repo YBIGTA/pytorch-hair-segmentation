@@ -1,3 +1,8 @@
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -12,7 +17,9 @@ class Contractor(nn.Module):
         
         net = MobileNetV2()
         if pretrained:
-            net.load_state_dict(torch.load('external/mobilenet_v2.pth.tar', map_location=self.device))
+            here = os.path.dirname(os.path.abspath(__file__))
+            path = os.path.join(here, 'external/mobilenet_v2.pth.tar')
+            net.load_state_dict(torch.load(path, map_location=self.device))
             
         # 0 ~ 7th layers    
         features = list(net.features.children())[:7]
@@ -38,42 +45,46 @@ class Contractor(nn.Module):
         for inv_res in features:
             for layer in inv_res.conv:
                 if isinstance(layer, nn.Conv2d) and layer.stride == (2, 2):
-                    layer.stride = (1,1)
+                    layer.stride = (1, 1)
         return features
 
 
 
-class PointwiseConvolution(nn.Module):
+class PointwiseConv(nn.Module):
     def __init__(self, cin, cout, bias=False):
-        super(PointwiseConvolution, self).__init__()
+        super(PointwiseConv, self).__init__()
         self.pw_conv = nn.Conv2d(cin, cout, 1, bias=bias)
         
     def forward(self, x):
         return self.pw_conv(x)
 
-class DepthwiseSeparableConvolution(nn.Module):  # 28, 64
+class DepthSepConv(nn.Module):  # 28, 64
     def __init__(self, cin, cout, kernel_size=3, stride=1, padding=1, bias=False):
-        super(DepthwiseSeparableConvolution, self).__init__()
+        super(DepthSepConv, self).__init__()
         self.dw_conv = nn.Conv2d(cin, cin, kernel_size, stride, padding, bias=bias, groups=cin)
-        self.pw_conv = PointwiseConvolution(cin, cout, bias=bias)
+        self.batch_norm = nn.BatchNorm2d(cin)
+        self.pw_conv = PointwiseConv(cin, cout, bias=bias)
         
     def forward(self, x):
         x = self.dw_conv(x)
+        x = self.batch_norm(x)
         x = self.pw_conv(x)
         return x
 
 
 class Inverter(nn.Module):
-    def __init__(self, cin, cout, bias=False):
+    def __init__(self, cin, cout, last=False, bias=False):
         super(Inverter, self).__init__()
         
-        self.dw_sep_conv = DepthwiseSeparableConvolution(cin, cout, bias=bias)
-        self.pw_conv = PointwiseConvolution(cout, cout, bias=bias)
-        self.relu6 = nn.ReLU6()
+        self.dw_sep_conv = DepthSepConv(cin, cout, bias=bias)
+        self.batch_norm = nn.BatchNorm2d(cout)
+        self.pw_conv = PointwiseConv(cout, cout, bias=bias)
+        self.relu6 = nn.ReLU6() 
         
     def forward(self, x):
         x = nn.functional.interpolate(x, scale_factor=2)
         x = self.dw_sep_conv(x)
+        x = self.batch_norm(x)
         x = self.pw_conv(x)
         x = self.relu6(x)
         return x
@@ -87,8 +98,7 @@ class Decoder(nn.Module):
             Inverter(cin, cmid),
             Inverter(cmid, cmid),
             Inverter(cmid, cmid),
-            PointwiseConvolution(cmid, cout),
-            nn.Sigmoid()
+            PointwiseConv(cmid, cout)
         )
         
     def forward(self, x):
@@ -99,13 +109,14 @@ class Decoder(nn.Module):
 class FCN(nn.Module):
     def __init__(self):
         super(FCN, self).__init__()
-        
-        self.contractor = Contractor()
-        self.decoder = Decoder(320, 1)
+
+        self.model = nn.Sequential(
+            Contractor(False),
+            Decoder(320, 1)
+            )
         
     def forward(self, x):
-        x = self.contractor(x)
-        x = self.decoder(x)
+        x = self.model(x)
         return x
 
 

@@ -16,6 +16,7 @@ class Accuracy(Metric):
 
     def update(self, output):
         y_pred, y = output
+        y_pred = torch.sigmoid(y_pred)
         y = y.long()
 
         if not (y.ndimension() == y_pred.ndimension() or y.ndimension() + 1 == y_pred.ndimension()):
@@ -74,8 +75,8 @@ class MeanIU(Metric):
         intersect = y_pred * y == 1
         union = y_pred + y > 0
 
-        self._num_intersect = torch.sum(intersect).item()
-        self._num_union = torch.sum(union).item()
+        self._num_intersect += torch.sum(intersect).item()
+        self._num_union += torch.sum(union).item()
 
 
     def compute(self):

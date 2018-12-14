@@ -35,7 +35,7 @@ def get_scheduler(string, optimizer):
 
 
 # for torch-igniter
-def train_with_ignite(networks, scheduler, batch_size, description, img_size,
+def train_with_ignite(network, scheduler, batch_size, description, img_size,
         epochs, lr, momentum,  num_workers, optimizer, use_pretrained, logger):
 
     from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
@@ -47,7 +47,7 @@ def train_with_ignite(networks, scheduler, batch_size, description, img_size,
     num_class = description2num_class(description)
 
     # building model
-    model = get_network(networks, num_class)
+    model = get_network(network, num_class)
     
     # log model summary
     input_size = (3, img_size, img_size)
