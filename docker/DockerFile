@@ -11,7 +11,7 @@ RUN pip install https://download.pytorch.org/whl/cpu/torch-1.0.0-cp36-cp36m-linu
 RUN pip install torchvision
 RUN pip install opencv-python
 
-RUN git clone -b feature/no_ignite https://github.com/YBIGTA/pytorch-hair-segmentation.git
+RUN git clone -b develop https://github.com/YBIGTA/pytorch-hair-segmentation.git
 
 WORKDIR pytorch-hair-segmentation
 

@@ -148,3 +148,10 @@ Figaro1k/
 # log and ckpt
 logs/
 ckpt/
+
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

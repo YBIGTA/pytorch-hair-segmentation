@@ -68,7 +68,7 @@ def main():
     logger.addHandler(file_handler)
     logger.info('arguments:{}'.format(" ".join(sys.argv)))
     
-    if not args.ignite:
+    if args.ignite is False:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
         model = mobile_hair.MobileMattingFCN()
