@@ -10,7 +10,7 @@
 
 ### 1. Architecture
 
-[이미지](이미지) 
+![alt Fully Convolutional MobileNet Architecture for Hair Segmentation](https://ibb.co/0DMwggj "Fully Convolutional MobileNet Architecture for Hair Segmentation")
 
 큰 틀에서, FCN_MobileNetV2는 다음과 같이 두 부분으로 나누어 생각할 수 있습니다 (`Contractor` 와 `Decoder` 는 코드에 쓴 이름을 그대로 가져왔습니다):
 
@@ -28,3 +28,7 @@
 ## 2. Performance
 
 [Figaro1K](http://projects.i-ctm.eu/it/progetto/figaro-1k) 데이터셋에 50 에폭동안 (K80 GPU 한대 기준으로 약 한시간) 학습시켜본 결과 Train 셋에 대해 평균 90% 이상의 IoU가, Validation 셋에 대해 평균 75% 정도의 IoU를 볼 수 있었습니다. (자세한 사항은 `notebooks/FCN_train.ipynb` 참조)
+
+
+
+![alt Example](https://ibb.co/NZSdJJj "Example")
