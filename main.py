@@ -36,7 +36,7 @@ def get_args():
     parser.add_argument('--momentum',type=float, default=0.9)
     parser.add_argument('--img_size',type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
-    parser.add_argument('--no_ignite', type=bool, default=True)
+    parser.add_argument('--ignite', type=bool, default=True)
     parser.add_argument('--visdom', type=bool, default=False)
 
     args = parser.parse_args()
@@ -69,7 +69,7 @@ def main():
     logger.addHandler(file_handler)
     logger.info('arguments:{}'.format(" ".join(sys.argv)))
     
-    if args.no_ignite:
+    if not args.ignite:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
         model = mobile_hair.MobileMattingFCN()

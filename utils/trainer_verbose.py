@@ -218,6 +218,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
     for epoch in range(epochs):
         print(epoch)
         for phase in ['train', 'test']:
+            print(phase)
             if phase == 'train':
                 model.train(True)
             else:
@@ -252,6 +253,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
                 print(l.item())
                 
                 running_loss += l.item()
+                print('endmodel')
             
             epoch_loss = running_loss / len(data_loader[phase])
             
