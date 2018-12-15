@@ -1,5 +1,7 @@
 FROM nsml/default_ml:tf-gpu-1.11.0torch-0.4.1opencv-3.4.3
 
+EXPOSE 8097
+
 RUN apt-get update && \
     apt-get install -y git
 
@@ -16,5 +18,3 @@ WORKDIR pytorch-hair-segmentation
 RUN pip install -r requirements.txt
 
 RUN sh data/figaro.sh
-
-CMD python -m visdom.server

@@ -55,10 +55,9 @@ class GreenBlock(nn.Module):
 class YellowBlock(nn.Module):
     def __init__(self):
         super(YellowBlock,self).__init__()
-        self.upsample = nn.UpsamplingBilinear2d(scale_factor=2)
     
     def forward(self, input):
-        return self.upsample(input)
+        return self.F.interpolate(input, scale_factor=2)
 
 class OrangeBlock(nn.Module):
     def __init__(self, in_channels, out_channels,kernel_size=3,stride=1,padding=0,dilation=1, bias=False):
