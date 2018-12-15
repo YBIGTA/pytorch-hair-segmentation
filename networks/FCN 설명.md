@@ -10,7 +10,7 @@
 
 ### 1. Architecture
 
-![alt Fully Convolutional MobileNet Architecture for Hair Segmentation](https://ibb.co/0DMwggj "Fully Convolutional MobileNet Architecture for Hair Segmentation")
+![alt Fully Convolutional MobileNet Architecture for Hair Segmentation](https://i.ibb.co/98TMFF9/image.png Fully Convolutional MobileNet Architecture for Hair Segmentation)
 
 큰 틀에서, FCN_MobileNetV2는 다음과 같이 두 부분으로 나누어 생각할 수 있습니다 (`Contractor` 와 `Decoder` 는 코드에 쓴 이름을 그대로 가져왔습니다):
 
@@ -31,4 +31,4 @@
 
 
 
-![alt Example](https://ibb.co/NZSdJJj "Example")
+![alt Example](https://i.ibb.co/wMsFPPW/image.png "Example")
