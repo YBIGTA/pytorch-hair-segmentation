@@ -15,8 +15,7 @@ class Accuracy(Metric):
     def __init__(self, thrs=0.5):
         super(Accuracy, self).__init__()
         self._thrs = thrs
-        self._num_correct = 0
-        self._num_examples = 0
+        self.reset()
 
     def reset(self):
         self._num_correct = 0
@@ -70,8 +69,7 @@ class IoU(Metric):
     def __init__(self, thrs=0.5):
         super(IoU, self).__init__()
         self._thrs = thrs
-        self._num_intersect = 0
-        self._num_union = 0
+        self.reset()
 
     def reset(self):
         self._num_intersect = 0
@@ -101,17 +99,14 @@ class F1score(Metric):
     """
     def __init__(self):
         super(F1score, self).__init__()
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self._tp = torch.zeros(11).to(device)
-        self._fp = torch.zeros(11).to(device)
-        self._fn = torch.zeros(11).to(device)
-        self._device = device
+        self.reset()
 
     def reset(self):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._tp = torch.zeros(11).to(device)
         self._fp = torch.zeros(11).to(device)
         self._fn = torch.zeros(11).to(device)
+        self._device = device
 
     def update(self, output):
         logit, y = output
