@@ -1,8 +1,8 @@
 import os
+import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
-import cv2
-import numpy as np
+
 
 class FigaroDataset(Dataset):
     def __init__(self, root_dir, train=True, joint_transforms=None,
@@ -13,9 +13,11 @@ class FigaroDataset(Dataset):
             joint_transforms (torchvision.transforms.Compose): tranformation on both data and target
             image_transforms (torchvision.transforms.Compose): tranformation only on data
             mask_transforms (torchvision.transforms.Compose): tranformation only on target
+            gray_image (bool): whether to return gray image image or not.
+                               If True, returns img, mask, gray.
         """
         mode = 'Training' if train else 'Testing'
-        img_dir = os.path.join(root_dir,'Original', mode)
+        img_dir = os.path.join(root_dir, 'Original', mode)
         mask_dir = os.path.join(root_dir, 'GT', mode)
 
         self.img_path_list = [os.path.join(img_dir, img) for img in sorted(os.listdir(img_dir))]
@@ -29,17 +31,15 @@ class FigaroDataset(Dataset):
         img_path = self.img_path_list[idx]
         img = Image.open(img_path)
 
-        if self.gray_image:
-            gray = img.convert('LA')
-
         mask_path = self.mask_path_list[idx]
         mask = Image.open(mask_path)
 
-        filename = os.path.basename(mask_path)
-        class_label = self.get_class_label(filename)
-
         if self.joint_transforms is not None:
             img, mask = self.joint_transforms(img, mask)
+            
+        if self.gray_image:
+            gray = img.convert('L')
+            gray = np.array(gray,dtype=np.float32)[np.newaxis,]/255
 
         if self.image_transforms is not None:
             img = self.image_transforms(img)
@@ -50,7 +50,7 @@ class FigaroDataset(Dataset):
         if self.gray_image:
             return img, mask, gray
         else:
-            return img, mask #, class_label
+            return img, mask
 
     def __len__(self):
         return len(self.mask_path_list)

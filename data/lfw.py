@@ -4,18 +4,6 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 
-def parse_name_list(fp):
-    with open(fp, 'r') as fin:
-        lines = fin.readlines()
-    parsed = list()
-    for line in lines:
-        name, num = line.strip().split(' ')
-        num = format(num, '0>4')
-        filename = '{}_{}'.format(name, num)
-        parsed.append((name, filename))
-    return parsed
-
-
 class LfwDataset(Dataset):
     def __init__(self, root_dir, train=True, joint_transforms=None,
                  image_transforms=None, mask_transforms=None):
@@ -29,7 +17,7 @@ class LfwDataset(Dataset):
 
         txt_file = 'parts_train_val.txt' if train else 'parts_test.txt'
         txt_dir = os.path.join(root_dir, txt_file)
-        name_list = parse_name_list(txt_dir)
+        name_list = LfwDataset.parse_name_list(txt_dir)
         img_dir = os.path.join(root_dir, 'lfw_funneled')
         mask_dir = os.path.join(root_dir, 'parts_lfw_funneled_gt_images')
 
@@ -63,20 +51,21 @@ class LfwDataset(Dataset):
 
     @staticmethod
     def rgb2binary(mask):
+        """transforms RGB mask image to binary hair mask image.
+        """
         mask_arr = np.array(mask)
         mask_map = mask_arr == np.array([255, 0, 0])
         mask_map = np.all(mask_map, axis=2).astype(np.float32)
         return Image.fromarray(mask_map)
 
     @staticmethod
-    def rgb2binary_(mask):
-        binary_image = Image.new('F', mask.size)
-        binary_pixel = binary_image.load()
-
-        mask_pix = mask.load()
-
-        for i in range(mask.size[0]):
-            for j in range(mask.size[1]):
-                rgb = mask_pix[i, j]
-                binary_pixel[i, j] = (rgb == [255, 0, 0])
-        return binary_image
+    def parse_name_list(fp):
+        with open(fp, 'r') as fin:
+            lines = fin.readlines()
+        parsed = list()
+        for line in lines:
+            name, num = line.strip().split(' ')
+            num = format(num, '0>4')
+            filename = '{}_{}'.format(name, num)
+            parsed.append((name, filename))
+        return parsed

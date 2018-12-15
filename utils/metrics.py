@@ -4,18 +4,26 @@ from ignite.metrics.metric import Metric
 
 class Accuracy(Metric):
     """
+    hard copied from https://pytorch.org/ignite/_modules/ignite/metrics/accuracy.html
+
     Calculates the accuracy.
 
     - `update` must receive output of the form `(y_pred, y)`.
     - `y_pred` must be in the following shape (batch_size, num_categories, ...) or (batch_size, ...)
     - `y` must be in the following shape (batch_size, ...)
     """
+    def __init__(self, thrs=0.5):
+        super(Accuracy, self).__init__()
+        self._thrs = thrs
+        self.reset()
+
     def reset(self):
         self._num_correct = 0
         self._num_examples = 0
 
     def update(self, output):
-        y_pred, y = output
+        logit, y = output
+        y_pred = torch.sigmoid(logit) >= self._thrs
         y = y.long()
 
         if not (y.ndimension() == y_pred.ndimension() or y.ndimension() + 1 == y_pred.ndimension()):
@@ -54,31 +62,72 @@ class Accuracy(Metric):
         return self._num_correct / self._num_examples
 
 
-class MeanIU(Metric):
-    def __init__(self, thrs):
-        super(MeanIU, self).__init__()
-        self.thrs = thrs
-        self._num_intersect = 0
-        self._num_union = 0
+class IoU(Metric):
+    """
+    Calculates intersection over union for only foreground (hair)
+    """
+    def __init__(self, thrs=0.5):
+        super(IoU, self).__init__()
+        self._thrs = thrs
+        self.reset()
 
     def reset(self):
         self._num_intersect = 0
         self._num_union = 0
 
     def update(self, output):
-        y_pred, y = output
+        logit, y = output
 
-        y_pred = torch.sigmoid(y_pred) >= self.thrs
+        y_pred = torch.sigmoid(logit) >= self._thrs
         y = y.byte()
 
         intersect = y_pred * y == 1
         union = y_pred + y > 0
 
-        self._num_intersect = torch.sum(intersect).item()
-        self._num_union = torch.sum(union).item()
-
+        self._num_intersect += torch.sum(intersect).item()
+        self._num_union += torch.sum(union).item()
 
     def compute(self):
         if self._num_union == 0:
-            raise ValueError('MeanIU must have at least one example before it can be computed')
+            raise ValueError('IoU must have at least one example before it can be computed')
         return self._num_intersect / self._num_union
+
+
+class F1score(Metric):
+    """
+    Calculates F1-score within thresholds [0.0, 0.1, ..., 1.0]
+    """
+    def __init__(self):
+        super(F1score, self).__init__()
+        self.reset()
+
+    def reset(self):
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self._tp = torch.zeros(11).to(device)
+        self._fp = torch.zeros(11).to(device)
+        self._fn = torch.zeros(11).to(device)
+        self._device = device
+
+    def update(self, output):
+        logit, y = output
+        n = y.size(0)
+        thrs = torch.FloatTensor([i/10 for i in range(11)]).to(self._device)
+
+        y_pred = torch.sigmoid(logit)
+        y_pred = y_pred.view(n, -1, 1).repeat(1, 1, 11) > thrs
+        y = y.byte().view(n, -1, 1).repeat(1, 1, 11)
+
+        tp = y_pred * y == 1
+        fp = y_pred - y == 1
+        fn = y - y_pred == 1
+
+        self._tp += torch.sum(tp, dim=[0,1]).float()
+        self._fp += torch.sum(fp, dim=[0,1]).float()
+        self._fn += torch.sum(fn, dim=[0,1]).float()
+
+
+    def compute(self):
+        pr = self._tp / (self._tp + self._fp)
+        re = self._tp / (self._tp + self._fn)
+        f1 = 2 * pr * re / (pr + re)
+        return [round(f.item(), 3) for f in f1]
