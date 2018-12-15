@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 
 
 def get_loader(dataset, data_dir='./data/Figaro1k', train=True, batch_size=64, shuffle=True,
-        joint_transforms=None, image_transforms=None, mask_transforms=None, num_workers=0):
+        joint_transforms=None, image_transforms=None, mask_transforms=None, num_workers=0, gray_image=False):
     """
     Args:
         dataset (string): name of dataset to use
@@ -18,10 +18,11 @@ def get_loader(dataset, data_dir='./data/Figaro1k', train=True, batch_size=64, s
 
     if dataset.lower() == 'figaro':
         dset = FigaroDataset(root_dir=data_dir,
-                             train=train,
-                             joint_transforms=joint_transforms,
-                             image_transforms=image_transforms,
-                             mask_transforms=mask_transforms)
+                            train=train,
+                            joint_transforms=joint_transforms,
+                            image_transforms=image_transforms,
+                            mask_transforms=mask_transforms,
+                            gray_image=gray_image)
 
     elif dataset.lower() == 'lfw':
         dset = LfwDataset(root_dir=data_dir,

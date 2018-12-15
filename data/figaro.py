@@ -30,9 +30,6 @@ class FigaroDataset(Dataset):
         img_path = self.img_path_list[idx]
         img = Image.open(img_path)
 
-        if self.gray_image:
-            gray = img.convert('LA')
-
         mask_path = self.mask_path_list[idx]
         mask = Image.open(mask_path)
 
@@ -41,6 +38,10 @@ class FigaroDataset(Dataset):
 
         if self.joint_transforms is not None:
             img, mask = self.joint_transforms(img, mask)
+            
+        if self.gray_image:
+            gray = img.convert('L')
+            gray = np.array(gray,dtype=np.float32)[np.newaxis,]/255
 
         if self.image_transforms is not None:
             img = self.image_transforms(img)

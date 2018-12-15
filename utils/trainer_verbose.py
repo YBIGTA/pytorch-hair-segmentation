@@ -2,6 +2,8 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+import numpy as np
+
 from data import get_loader
 from utils import update_state, save_ckpt_file
 from utils import joint_transforms as jnt_trnsf
@@ -10,6 +12,8 @@ from networks import get_network
 
 import torch
 import torchvision.transforms as std_trnsf
+
+from tqdm import tqdm
 
 
 def get_optimizer(string, model, lr, momentum):
@@ -159,3 +163,115 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
         save_ckpt_file(path, state)
 
     trainer.run(train_loader, max_epochs=epochs)
+
+def train_without_ignite(model, loss, batch_size, img_size,
+        epochs, lr, num_workers, optimizer, logger, gray_image=False, scheduler=None, viz=True):
+    import visdom
+    from utils.metrics import Accuracy, MeanIU
+
+    DEFAULT_PORT = 8097
+    DEFAULT_HOSTNAME = "http://localhost"
+    
+    if viz:
+        vis = visdom.Visdom(port=DEFAULT_PORT, server=DEFAULT_HOSTNAME)
+        vis.text("Strated!")
+    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    data_loader = {}
+    
+    joint_transforms = jnt_trnsf.Compose([
+        jnt_trnsf.Resize(img_size),
+        jnt_trnsf.RandomRotate(5),
+        jnt_trnsf.RandomHorizontallyFlip()
+    ])
+
+    train_image_transforms = std_trnsf.Compose([
+        std_trnsf.ColorJitter(0.05, 0.05, 0.05, 0.05),
+        std_trnsf.ToTensor(),
+        std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+
+    test_image_transforms = std_trnsf.Compose([
+        std_trnsf.ToTensor(),
+        std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+
+    mask_transforms = std_trnsf.Compose([
+        std_trnsf.ToTensor()
+        ])
+    
+    data_loader['train'] = get_loader(dataset='figaro',
+                              train=True,
+                              joint_transforms=joint_transforms,
+                              image_transforms=train_image_transforms,
+                              mask_transforms=mask_transforms,
+                              batch_size=batch_size,
+                              shuffle=True,
+                              num_workers=num_workers,
+                              gray_image=gray_image)
+
+    data_loader['test'] = get_loader(dataset='figaro',
+                             train=False,
+                             joint_transforms=None,
+                             image_transforms=test_image_transforms,
+                             mask_transforms=mask_transforms,
+                             batch_size=1,
+                             shuffle=True,
+                             num_workers=num_workers,
+                             gray_image=gray_image)
+    
+    for epoch in range(epochs):
+        for phase in ['train', 'test']:
+            if phase == 'train':
+                model.train(True)
+            else:
+                prev_grad_state = torch.is_grad_enabled()
+                torch.set_grad_enabled(False)
+                model.train(False)
+            
+            running_loss = 0.0
+            
+            for i, data in enumerate(tqdm(data_loader[phase], file=sys.stdout)):
+                if i == len(data_loader[phase]) - 1: break
+                data_ = [t.to(device) if isinstance(t, torch.Tensor) else t for t in data]
+                
+                if gray_image:
+                    img, mask, gray = data_
+                else:
+                    img, mask = data_
+                
+                model.zero_grad()
+                
+                pred_mask = model(img)
+                
+                if gray_image:
+                    l = loss(pred_mask, mask, gray)
+                else:
+                    l = loss(pred_mask, mask)
+                
+                if phase == 'train':
+                    l.backward()
+                    optimizer.step()
+                
+                print(l.item())
+                
+                running_loss += l.item()
+            
+            epoch_loss = running_loss / len(data_loader[phase])
+            
+            if phase == 'train':
+                logger.info(f"Training Results - Epoch: {epoch} Avg-loss: {epoch_loss:.3f}")
+            
+            if phase == 'test':
+                imgs = np.stack([
+                    pred_mask.detach().cpu().numpy()[0],
+                    mask.detach().cpu().numpy()[0]
+                ])
+                if viz: vis.images(imgs, opts=dict(title=f'pred img for {epoch}-th iter'))
+                logger.info(f"Test Results - Epoch: {epoch} Avg-loss: {epoch_loss:.3f}")
+                
+                if scheduler: scheduler.step(epoch_loss)
+            
+                torch.set_grad_enabled(prev_grad_state)
+  
