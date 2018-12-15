@@ -8,19 +8,22 @@ class ConvLayerBn(nn.Module):
                  stride=1, padding=1, bias=False, relu=True):
         super(ConvLayerBn,self).__init__()
         layers = list()
-        layers.append(nn.Conv2d(in_features, out_features,
+        layers.append(nn.Conv2d(in_features,
+                                out_features,
                                 kernel_size=kernel_size,
                                 stride=stride,
                                 padding=padding,
                                 bias=bias))
+
         layers.append(nn.BatchNorm2d(out_features))
+
         if relu:
             layers.append(nn.ReLU(inplace=True))
+
         self.layers = nn.Sequential(*layers)
 
     def forward(self, input):
-        output = self.layers(input)
-        return output
+        return self.layers(input)
 
 
 class SegNet(nn.Module):
@@ -35,14 +38,16 @@ class SegNet(nn.Module):
         # make encoder layers
         for layer in list(vgg.features):
             layers.append(layer)
+
             if isinstance(layer, nn.MaxPool2d):
-                layers[-1] = nn.MaxPool2d(2,2,return_indices=True)
+                layers[-1] = nn.MaxPool2d(2, 2, return_indices=True)
                 encoder.append(nn.Sequential(*layers))
                 layers = list()
 
         # make decoder layers
         # specs: (num_layers, in_features, out_features)
-        layer_specs = [(3, 512, 512),(3, 512, 256),(3, 256, 128),(2, 128, 64)]
+        layer_specs = [(3, 512, 512), (3, 512, 256), (3, 256, 128), (2, 128, 64)]
+
         for spec in layer_specs:
             num_layer, in_features, out_features = spec
             for i in range(num_layer):
@@ -71,6 +76,3 @@ class SegNet(nn.Module):
             x = nn.MaxUnpool2d(2,2)(x,idx)
             x = layer(x)
         return x
-
-
-
