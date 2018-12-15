@@ -135,7 +135,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
                      train_loss=metrics['loss'],
                      val_loss=state['val_loss'],
                      val_pix_acc=state['val_pix_acc'],
-                     val_miu=state['val_miu'])
+                     val_iou=state['val_iou'])
 
     # execution after every epoch
     @trainer.on(Events.EPOCH_COMPLETED)
@@ -154,7 +154,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
                      train_loss=state['train_loss'],
                      val_loss=metrics['loss'],
                      val_pix_acc=metrics['pix-acc'],
-                     val_miu=metrics['iou'])
+                     val_iou=metrics['iou'])
 
         path = ckpt_path.format(network=networks,
                                 optimizer=optimizer,
@@ -167,7 +167,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
 def train_without_ignite(model, loss, batch_size, img_size,
         epochs, lr, num_workers, optimizer, logger, gray_image=False, scheduler=None, viz=True):
     import visdom
-    from utils.metrics import Accuracy, MeanIU
+    from utils.metrics import Accuracy, IoU
 
     DEFAULT_PORT = 8097
     DEFAULT_HOSTNAME = "http://localhost"

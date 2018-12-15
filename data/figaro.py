@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -32,9 +33,6 @@ class FigaroDataset(Dataset):
 
         mask_path = self.mask_path_list[idx]
         mask = Image.open(mask_path)
-
-        filename = os.path.basename(mask_path)
-        class_label = self.get_class_label(filename)
 
         if self.joint_transforms is not None:
             img, mask = self.joint_transforms(img, mask)

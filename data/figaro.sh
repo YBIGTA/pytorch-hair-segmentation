@@ -16,7 +16,10 @@ fi
 
 echo "Now downloading Figaro1k.zip ..."
 
-wget http://projects.i-ctm.eu/sites/default/files/AltroMateriale/207_Michele%20Svanera/Figaro1k.zip
+# wget http://projects.i-ctm.eu/sites/default/files/AltroMateriale/207_Michele%20Svanera/Figaro1k.zip
+# The official link is not working for some reason, so temporarily use dropbox instead.
+
+wget https://www.dropbox.com/s/35momrh68zuhkei/Figaro1k.zip
 
 echo "Unzip Figaro1k.zip ..."
 

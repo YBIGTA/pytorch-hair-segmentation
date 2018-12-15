@@ -16,6 +16,9 @@ from networks import mobile_hair
 
 logger = logging.getLogger('hair segmentation project')
 
+def str2bool(s):
+    return s.lower() in ('t', 'true', '1')
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='Hair Segmentation')
@@ -27,15 +30,12 @@ def get_args():
     parser.add_argument('--epochs', default=1, type=int)
     parser.add_argument('--lr', default=0.001, type=float)
     parser.add_argument('--num_workers', type=int, default=4)
-    parser.add_argument('--optimizer', type=str, default='adam')
-    parser.add_argument('--momentum',type=float, default=0.9)
     parser.add_argument('--img_size',type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
-    parser.add_argument('--ignite', type=bool, default=False)
-    parser.add_argument('--visdom', type=bool, default=False)
+    parser.add_argument('--ignite', type=str2bool, default=False)
+    parser.add_argument('--visdom', type=str2bool, default=False)
     parser.add_argument('--optimizer', type=str, default='sgd')
     parser.add_argument('--momentum', type=float, default=0.9)
-    parser.add_argument('--img_size', type=int, default=256)
 
     args = parser.parse_args()
 
@@ -66,7 +66,6 @@ def main():
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
     logger.info('arguments:{}'.format(" ".join(sys.argv)))
-    
     if args.ignite is False:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
@@ -101,7 +100,6 @@ def main():
                             )
     
     else: train_with_ignite(networks=args.networks,
-                      scheduler=args.scheduler,
                       dataset=args.dataset,
                       data_dir=args.data_dir,
                       batch_size=args.batch_size,
