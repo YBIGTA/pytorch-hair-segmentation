@@ -21,19 +21,19 @@ def get_optimizer(string, model, lr, momentum):
     raise ValueError
 
 
-def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
-                      epochs, lr, momentum,  num_workers, optimizer, logger):
+def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
+                      epochs, lr, momentum, num_workers, optimizer, logger):
 
     from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
     from ignite.metrics import Loss
-    from utils.metrics import Accuracy, IoU
+    from utils.metrics import Accuracy, IoU, F1score
 
     # device
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # build model
     model = get_network(networks)
-    
+
     # log model summary
     input_size = (3, img_size, img_size)
     summarize_model(model.to(device), input_size, logger, batch_size, device)
@@ -42,11 +42,11 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
     loss = torch.nn.BCEWithLogitsLoss()
 
     # build optimizer and scheduler
-    optimizer = get_optimizer(optimizer, model, lr, momentum)
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
+    model_optimizer = get_optimizer(optimizer, model, lr, momentum)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(model_optimizer)
 
     # transforms on both image and mask
-    joint_transforms = jnt_trnsf.Compose([
+    train_joint_transforms = jnt_trnsf.Compose([
         jnt_trnsf.Resize(img_size),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
@@ -73,7 +73,7 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
     train_loader = get_loader(dataset=dataset,
                               data_dir=data_dir,
                               train=True,
-                              joint_transforms=joint_transforms,
+                              joint_transforms=train_joint_transforms,
                               image_transforms=train_image_transforms,
                               mask_transforms=mask_transforms,
                               batch_size=batch_size,
@@ -83,7 +83,6 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
     test_loader = get_loader(dataset=dataset,
                              data_dir=data_dir,
                              train=False,
-                             joint_transforms=joint_transforms,
                              image_transforms=test_image_transforms,
                              mask_transforms=mask_transforms,
                              batch_size=1,
@@ -91,13 +90,14 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
                              num_workers=num_workers)
 
     # build trainer / evaluator with ignite
-    trainer = create_supervised_trainer(model, optimizer, loss, device=device)
+    trainer = create_supervised_trainer(model, model_optimizer, loss, device=device)
 
     evaluator = create_supervised_evaluator(model,
                                             metrics={
                                                 'pix-acc': Accuracy(),
-                                                'mean-iu': IoU(0.5),
-                                                'loss': Loss(loss)
+                                                'iou': IoU(0.5),
+                                                'loss': Loss(loss),
+                                                'f1': F1score()
                                                 },
                                             device=device)
 
@@ -123,8 +123,8 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
         # evaluate on training set
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
-        logger.info("Training Results - Epoch: {}  Pix-acc: {:.3f} MeanIU: {:.3f} Avg-loss: {:.3f}".format(
-            trainer.state.epoch, metrics['pix-acc'], metrics['mean-iu'], metrics['loss']))
+        logger.info("Training Results - Epoch: {} Avg-loss: {:.3f} Pix-acc: {:.3f} IoU: {:.3f} F1: {}".format(
+            trainer.state.epoch, metrics['loss'], metrics['pix-acc'], metrics['iou'], str(metrics['f1'])))
 
         # update state
         update_state(weight=model.state_dict(),
@@ -139,8 +139,8 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
         # evaluate test(validation) set
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
-        logger.info("Validation Results - Epoch: {}  Pix-acc: {:.2f} MeanIU: {:.3f} Avg-loss: {:.2f}".format(
-            trainer.state.epoch, metrics['pix-acc'], metrics['mean-iu'], metrics['loss']))
+        logger.info("Validation Results - Epoch: {} Avg-loss: {:.2f} Pix-acc: {:.2f} IoU: {:.3f} F1: {}".format(
+            trainer.state.epoch, metrics['loss'], metrics['pix-acc'], metrics['iou'], str(metrics['f1'])))
 
         # update scheduler
         lr_scheduler.step(metrics['loss'])
@@ -150,7 +150,7 @@ def train_with_ignite(networks,  dataset, data_dir, batch_size, img_size,
                      train_loss=state['train_loss'],
                      val_loss=metrics['loss'],
                      val_pix_acc=metrics['pix-acc'],
-                     val_miu=metrics['mean-iu'])
+                     val_miu=metrics['iou'])
 
         path = ckpt_path.format(network=networks,
                                 optimizer=optimizer,
