@@ -1,6 +1,3 @@
-from .segnet import SegNet
-from .unet import Unet
-from .ternausnet import TernausNet
 from .deeplab_v3_plus import DeepLab
 from .pspnet import PSPNetWithSqueezeNet
 
