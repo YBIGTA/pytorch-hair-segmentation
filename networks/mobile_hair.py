@@ -57,7 +57,7 @@ class YellowBlock(nn.Module):
         super(YellowBlock,self).__init__()
     
     def forward(self, input):
-        return self.F.interpolate(input, scale_factor=2)
+        return F.interpolate(input, scale_factor=2)
 
 class OrangeBlock(nn.Module):
     def __init__(self, in_channels, out_channels,kernel_size=3,stride=1,padding=0,dilation=1, bias=False):
