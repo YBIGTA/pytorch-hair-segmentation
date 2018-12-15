@@ -25,7 +25,7 @@ def get_args():
     pretrained_names = [] # from models or torchvision
 
     parser = argparse.ArgumentParser(description='Hair Segmentation')
-    parser.add_argument('--networks', default='resnet101')
+    parser.add_argument('--networks', default='unet')
     parser.add_argument('--scheduler', default='ReduceLROnPlateau')
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--description', type=str, default='binary_class')
@@ -36,7 +36,7 @@ def get_args():
     parser.add_argument('--momentum',type=float, default=0.9)
     parser.add_argument('--img_size',type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
-    parser.add_argument('--ignite', type=bool, default=True)
+    parser.add_argument('--ignite', type=bool, default=False)
     parser.add_argument('--visdom', type=bool, default=False)
 
     args = parser.parse_args()
