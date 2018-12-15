@@ -32,7 +32,7 @@ def get_args():
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--img_size',type=int, default=256)
     parser.add_argument('--use_pretrained', type=str, default='ImageNet')
-    parser.add_argument('--ignite', type=str2bool, default=False)
+    parser.add_argument('--ignite', type=str2bool, default=True)
     parser.add_argument('--visdom', type=str2bool, default=False)
     parser.add_argument('--optimizer', type=str, default='sgd')
     parser.add_argument('--momentum', type=float, default=0.9)
@@ -96,8 +96,7 @@ def main():
                              logger=logger,
                              gray_image=True,
                              scheduler=scheduler,
-                             viz=args.visdom
-                            )
+                             viz=args.visdom)
     
     else: train_with_ignite(networks=args.networks,
                       dataset=args.dataset,

@@ -11,6 +11,28 @@ Most of codes here are from
 https://github.com/zijundeng/pytorch-semantic-segmentation/blob/master/utils/joint_transforms.py
 """
 
+def pad_to_target(img, target_height, target_width, label=0):
+    # Pad image with zeros to the specified height and width if needed
+    # This op does nothing if the image already has size bigger than target_height and target_width.
+    w, h = img.size
+    left = top = right = bottom = 0
+    doit = False
+    if target_width > w:
+        delta = target_width - w
+        left = delta // 2
+        right = delta - left
+        doit = True
+    if target_height > h:
+        delta = target_height - h
+        top = delta // 2
+        bottom = delta - top
+        doit = True
+    if doit:
+        img = ImageOps.expand(img, border=(left, top, right, bottom), fill=label)
+    assert img.size[0] >= target_width
+    assert img.size[1] >= target_height
+    return img 
+
 class Compose(object):
     def __init__(self, transforms):
         self.transforms = transforms
@@ -21,6 +43,17 @@ class Compose(object):
             img, mask = t(img, mask)
         return img, mask
 
+class Safe32Padding(object):
+    def __call__(self, img, mask=None):
+        width, height = img.size
+
+        if (height % 32) != 0: height += 32 - (height % 32)
+        if (width % 32) != 0: width += 32 - (width % 32)
+        
+        if mask:
+            return pad_to_target(img, height, width), pad_to_target(mask, height, width)
+        else:
+            return pad_to_target(img, height, width)
 
 class Resize(object):
     def __init__(self, size):

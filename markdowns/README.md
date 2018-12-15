@@ -26,3 +26,25 @@ python3 main.py \
 ```
 
 * You should add your own model script in `networks` and make it avaliable in  `get_network` in `./networks/__init__.py`
+
+### Current Project Tree
+
+```python
+pytorch-hair-segmentation/
+  data/ # includes data script
+  docker/ # includes dockerfile
+  logs/ # log file for train-test
+  markdowns/ # documentation
+  models/ # saved model
+  networks/ # pytorch model
+    deeplab_v3_plus
+    mobile_hair
+    pspnet
+    segnet
+    ternausnet
+    unet
+  notebooks/ # notebook example for using network code
+  utils/ # util function for training
+```
+
+### RUN with Docker

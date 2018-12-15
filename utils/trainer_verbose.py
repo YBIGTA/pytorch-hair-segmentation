@@ -51,7 +51,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
 
     # transforms on both image and mask
     train_joint_transforms = jnt_trnsf.Compose([
-        jnt_trnsf.Resize(img_size),
+        jnt_trnsf.RandomCrop(img_size),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
@@ -62,6 +62,10 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
         std_trnsf.ToTensor(),
         std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
+    
+    test_joint_transforms = jnt_trnsf.Compose([
+        jnt_trnsf.Safe32Padding()
+    ])
 
     test_image_transforms = std_trnsf.Compose([
         std_trnsf.ToTensor(),
@@ -87,6 +91,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
     test_loader = get_loader(dataset=dataset,
                              data_dir=data_dir,
                              train=False,
+                             joint_transforms=test_joint_transforms,
                              image_transforms=test_image_transforms,
                              mask_transforms=mask_transforms,
                              batch_size=1,
@@ -181,7 +186,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
     data_loader = {}
     
     joint_transforms = jnt_trnsf.Compose([
-        jnt_trnsf.Resize(img_size),
+        jnt_trnsf.RandomCrop(img_size),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
