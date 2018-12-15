@@ -44,6 +44,7 @@ def get_args():
     return args
 
 def main():
+    print('main is runned')
     args = get_args()
     
     check_mkdir('./logs')

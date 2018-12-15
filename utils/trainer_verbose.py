@@ -165,6 +165,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
     import visdom
     from utils.metrics import Accuracy, MeanIU
 
+    print('train is runned')
     DEFAULT_PORT = 8097
     DEFAULT_HOSTNAME = "http://localhost"
     
@@ -215,6 +216,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
                              gray_image=gray_image)
     
     for epoch in range(epochs):
+        print(epoch)
         for phase in ['train', 'test']:
             if phase == 'train':
                 model.train(True)
