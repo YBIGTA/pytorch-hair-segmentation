@@ -15,7 +15,6 @@ import torchvision.transforms as std_trnsf
 
 from tqdm import tqdm
 
-
 def get_optimizer(string, model, lr, momentum):
     string = string.lower()
     if string == 'adam':
@@ -51,7 +50,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
 
     # transforms on both image and mask
     train_joint_transforms = jnt_trnsf.Compose([
-        jnt_trnsf.RandomCrop(img_size),
+        jnt_trnsf.Resize(img_size),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
@@ -179,7 +178,6 @@ def train_without_ignite(model, loss, batch_size, img_size,
     
     if viz:
         vis = visdom.Visdom(port=DEFAULT_PORT, server=DEFAULT_HOSTNAME)
-        vis.text("Strated!")
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
@@ -196,6 +194,10 @@ def train_without_ignite(model, loss, batch_size, img_size,
         std_trnsf.ToTensor(),
         std_trnsf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
+    
+    test_joint_transforms = jnt_trnsf.Compose([
+        jnt_trnsf.Safe32Padding()
+    ])
 
     test_image_transforms = std_trnsf.Compose([
         std_trnsf.ToTensor(),
@@ -218,7 +220,7 @@ def train_without_ignite(model, loss, batch_size, img_size,
 
     data_loader['test'] = get_loader(dataset='figaro',
                              train=False,
-                             joint_transforms=None,
+                             joint_transforms=test_joint_transforms,
                              image_transforms=test_image_transforms,
                              mask_transforms=mask_transforms,
                              batch_size=1,
@@ -259,21 +261,24 @@ def train_without_ignite(model, loss, batch_size, img_size,
                     l.backward()
                     optimizer.step()
                 
-                print(l.item())
-                
                 running_loss += l.item()
             
             epoch_loss = running_loss / len(data_loader[phase])
             
             if phase == 'train':
                 logger.info(f"Training Results - Epoch: {epoch} Avg-loss: {epoch_loss:.3f}")
+                if viz:
+                    vis.images([
+                        np.clip(pred_mask.detach().cpu().numpy()[0],0,1),
+                        mask.detach().cpu().numpy()[0]
+                    ], opts=dict(title=f'pred img for {epoch}-th iter'))
             
             if phase == 'test':
-                imgs = np.stack([
-                    pred_mask.detach().cpu().numpy()[0],
-                    mask.detach().cpu().numpy()[0]
-                ])
-                if viz: vis.images(imgs, opts=dict(title=f'pred img for {epoch}-th iter'))
+                if viz:
+                    vis.images([
+                        np.clip(pred_mask.detach().cpu().numpy()[0],0,1),
+                        mask.detach().cpu().numpy()[0]
+                    ], opts=dict(title=f'pred img for {epoch}-th iter'))
                 logger.info(f"Test Results - Epoch: {epoch} Avg-loss: {epoch_loss:.3f}")
                 
                 if scheduler: scheduler.step(epoch_loss)

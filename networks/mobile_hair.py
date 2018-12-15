@@ -127,8 +127,7 @@ class MobileMattingFCN(nn.Module):
         self.o4 = OrangeBlock(64, 64)
 
         self.red = nn.Sequential(
-            nn.Conv2d(64, 1, 1),
-            nn.Sigmoid()
+            nn.Conv2d(64, 1, 1)
         )
 
         #self.fc = nn.Linear(1024, 1000)
@@ -172,7 +171,7 @@ class HairMattingLoss(nn.modules.loss._Loss):
         super(HairMattingLoss, self).__init__()
         self.ratio_of_gradient = ratio_of_Gradient
 
-        self.bce_loss = nn.BCELoss()
+        self.bce_loss = nn.BCEWithLogitsLoss()
     
     def forward(self, pred, true, image):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -201,7 +200,5 @@ class HairMattingLoss(nn.modules.loss._Loss):
             loss2 = torch.sum(torch.mul(G, 1 - torch.pow(I_x*G_x + I_y*G_y,2)))/torch.sum(G) + 1e-6
         
         loss = self.bce_loss(pred, true)
-
-        print('bce', loss.item(), 'term', loss2)
 
         return loss
