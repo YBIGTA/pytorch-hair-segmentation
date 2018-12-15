@@ -1,10 +1,10 @@
 import os
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 from collections import OrderedDict
 import numpy as np
+
 
 def check_mkdir(path):
     if not os.path.exists(path):

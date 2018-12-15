@@ -144,7 +144,11 @@ dmypy.json
 
 # Dataset
 Figaro1k/
+Lfw/
 
 # log and ckpt
 logs/
 ckpt/
+
+# vscode
+.vscode/
