@@ -39,4 +39,3 @@ python3 main.py \
 > with no-ignite
 
 `docker run -p davinnovation/pytorch-hairsegment:cpu python main.py --ignite False`
-
