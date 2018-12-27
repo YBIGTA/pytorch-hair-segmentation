@@ -50,7 +50,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
 
     # transforms on both image and mask
     train_joint_transforms = jnt_trnsf.Compose([
-        jnt_trnsf.RandomCrop(img_size),
+        jnt_trnsf.Resize(img_size),
         jnt_trnsf.RandomRotate(5),
         jnt_trnsf.RandomHorizontallyFlip()
     ])
