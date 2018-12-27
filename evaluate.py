@@ -12,7 +12,7 @@ from networks import get_network
 from data import get_loader
 import torchvision.transforms as std_trnsf
 from utils import joint_transforms as jnt_trnsf
-from utils.metrics import IoU, F1score
+from utils.metrics import IoU, F1score, DiceCoef
 
 def str2bool(s):
     return s.lower() in ('t', 'true', 1)
@@ -78,6 +78,8 @@ if __name__ == '__main__':
     metric_iou.reset()
     metric_f = F1score()
     metric_f.reset()
+    metric_dice = DiceCoef()
+    metric_dice.reset()
     durations = list()
 
     # prepare images
@@ -124,6 +126,7 @@ if __name__ == '__main__':
         # log measurements
         metric_iou.update((logit, label))
         metric_f.update((logit, label))
+        metric_dice.update((logit, label))
         durations.append(duration)
 
         # write overlay image
@@ -132,8 +135,10 @@ if __name__ == '__main__':
     # compute measurements
     iou = metric_iou.compute()
     f = metric_f.compute()
+    dice = metric_dice.compute()
     avg_fps = len(durations)/sum(durations)
 
     print('Avg-FPS:', avg_fps)
     print('F-measure:', f)
     print('IOU:', iou)
+    print('Dice Coef:', dice)
