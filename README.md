@@ -1,6 +1,8 @@
 # pytorch-hair-segmentation
 Implementation of pytorch semantic segmentation with [figaro-1k](http://projects.i-ctm.eu/it/progetto/figaro-1k).
 
+- tutorial document : https://pytorchhair.gitbook.io/project/ (kor)
+
 ### Downloading dataset
 ```bash
 # specify a directory for dataset to be downloaded into, else default is ./data/
@@ -35,4 +37,6 @@ python3 main.py \
 `docker run davinnovation/pytorch-hairsegment:cpu python main.py`
 
 > with no-ignite
-`docker run -p :8097 davinnovation/pytorch-hairsegment:cpu python main.py --ignite False`
+
+`docker run -p davinnovation/pytorch-hairsegment:cpu python main.py --ignite False`
+
