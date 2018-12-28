@@ -131,3 +131,33 @@ class F1score(Metric):
         re = self._tp / (self._tp + self._fn)
         f1 = 2 * pr * re / (pr + re)
         return [round(f.item(), 3) for f in f1]
+
+class DiceCoef(Metric):
+    """
+    Calculates intersection over union for only foreground (hair)
+    """
+    def __init__(self, thrs=0.5):
+        super(DiceCoef, self).__init__()
+        self._thrs = thrs
+        self.reset()
+
+    def reset(self):
+        self._num_intersect = 0
+        self._num_union = 0
+
+    def update(self, output):
+        logit, y = output
+
+        y_pred = torch.sigmoid(logit) >= self._thrs
+        y = y.byte()
+
+        intersect = y_pred * y == 1
+        union = y_pred + y > 0
+
+        self._num_intersect += torch.sum(intersect).item()
+        self._num_union += torch.sum(union).item()
+
+    def compute(self):
+        if self._num_union == 0:
+            raise ValueError('IoU must have at least one example before it can be computed')
+        return 2 * self._num_intersect / (self._num_union + self._num_intersect)    
