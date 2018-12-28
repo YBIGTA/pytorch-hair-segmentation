@@ -137,7 +137,7 @@ class DiceCoef(Metric):
     Calculates intersection over union for only foreground (hair)
     """
     def __init__(self, thrs=0.5):
-        super(IoU, self).__init__()
+        super(DiceCoef, self).__init__()
         self._thrs = thrs
         self.reset()
 
