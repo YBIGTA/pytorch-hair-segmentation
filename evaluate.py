@@ -80,6 +80,7 @@ if __name__ == '__main__':
     metric_f.reset()
     metric_dice = DiceCoef()
     metric_dice.reset()
+
     durations = list()
 
     # prepare images
