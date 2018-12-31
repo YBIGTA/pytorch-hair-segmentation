@@ -19,32 +19,36 @@ def str2bool(s):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--ckpt_dir', help='path to ckpt file', default='./models/pspnet_sgd_lr_0.002_epoch_46_test_iou_0.882.pth')
-    parser.add_argument('-d', '--data_dir', help='path to Figaro1k folder', default='./data/Figaro1k')
-    parser.add_argument('-n', '--network', help='network', default='pspnet')
-    parser.add_argument('-s', '--save_root', help='path to save overlay images, default=None and do not save images in this case',
-            default='./overlay')
-    parser.add_argument('-g', '--use_gpu', help='True if using gpu during inference', default=True)
+    parser.add_argument('--ckpt_dir', help='path to ckpt file',type=str,
+            default='./models/pspnet_resnet101_sgd_lr_0.002_epoch_100_test_iou_0.918.pth')
+    parser.add_argument('--dataset', type=str, default='figaro',
+            help='Name of dataset you want to use default is "figaro"')
+    parser.add_argument('--data_dir', help='path to Figaro1k folder', type=str, default='./data/Figaro1k')
+    parser.add_argument('--networks', help='name of neural network', type=str, default='pspnet_resnet101')
+    parser.add_argument('--save_dir', default='./overlay',
+            help='path to save overlay images, default=None and do not save images in this case')
+    parser.add_argument('--use_gpu', type=str2bool, default=True,
+            help='True if using gpu during inference')
 
     args = parser.parse_args()
 
     ckpt_dir = args.ckpt_dir
     data_dir = args.data_dir
     img_dir = os.path.join(data_dir, 'Original', 'Testing')
-    network = args.network.lower()
-    save_root = args.save_root
+    network = args.networks.lower()
+    save_dir = args.save_dir
     device = 'cuda' if args.use_gpu else 'cpu'
 
     assert os.path.exists(ckpt_dir)
     assert os.path.exists(data_dir)
-    assert os.path.exists(os.path.split(save_root)[0])
-    assert network in ('deeplabv3plus', 'pspnet', 'mobilenet')
+    assert os.path.exists(os.path.split(save_dir)[0])
+    assert network in ('deeplabv3plus', 'pspnet_resnet101', 'pspnet_squeezenet' 'mobilenet')
 
-    if not os.path.exists(save_root):
-            os.mkdir(save_root)
+    if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
 
     # prepare network with trained parameters
-    net = get_network('pspnet').to(device)
+    net = get_network(network).to(device)
     state = torch.load(ckpt_dir)
     net.load_state_dict(state['weight'])
 
@@ -63,7 +67,7 @@ if __name__ == '__main__':
         std_trnsf.ToTensor()
         ])
 
-    test_loader = get_loader(dataset='figaro',
+    test_loader = get_loader(dataset=args.dataset,
                              data_dir=data_dir,
                              train=False,
                              joint_transforms=test_joint_transforms,
@@ -105,7 +109,7 @@ if __name__ == '__main__':
         mask_n[:,:,0] = 255
         mask_n[:,:,0] *= mask
 
-        path = os.path.join(save_root, "figaro_img_%04d.png" % i)
+        path = os.path.join(save_dir, "figaro_img_%04d.png" % i)
         image_n = cv2.imread(imgs[i])
 
         # discard padded area
