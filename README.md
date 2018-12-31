@@ -39,3 +39,35 @@ python3 main.py \
 > with no-ignite
 
 `docker run -p davinnovation/pytorch-hairsegment:cpu python main.py --ignite False`
+
+### Evaluating model
+
+```bash
+# sample execution
+
+python3 evaluate.py \
+  --networks pspnet_resnet101 \
+  --ckpt_dir ./models/pspnet_resnet101_sgd_lr_0.002_epoch_100_test_iou_0.918.pth \
+  --dataset figaro \
+  --data_dir ./data/Figaro1k \
+  --save_dir ./overlay/ \
+  --use_gpu True
+```
+
+### Evaluation result on figaro testset
+
+|       Model      | IoU | Dice Coefficient |
+|       ---        | --- |        ---       |
+| pspnet_resnet101 | 0.92|       0.96       |
+| pspnet_squeezenet| 0.88|       0.91       |
+|   deeplabv3plus  | 0.80|       0.89       |
+
+
+### Sample visualization
+* Red: GT / Blue: Segmentation Map
+
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_0.png' alt='sample_0' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_1.png' alt='sample_1' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_2.png' alt='sample_2' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_3.png' alt='sample_3' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_4.png' alt='sample_4' width=512 height=256 /></a>

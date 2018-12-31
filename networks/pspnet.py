@@ -1,9 +1,16 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torchvision.models import squeezenet1_1
+from torchvision.models import squeezenet1_1, resnet101
 from torch.nn.init import xavier_normal_
 
+class ResNet101Extractor(nn.Module):
+    def __init__(self):
+        super(ResNet101Extractor, self).__init__()
+        model = resnet101(pretrained=True)
+        self.features = nn.Sequential(*list(model.children())[:7])
+    def forward(self, x):
+        return self.features(x)
 
 class SqueezeNetExtractor(nn.Module):
     def __init__(self):
@@ -69,14 +76,22 @@ class UpsampleLayer(nn.Module):
         return self.conv(f)
 
 
-class PSPNetWithSqueezeNet(nn.Module):
-    def __init__(self, num_class=1, sizes=(1, 2, 3, 6)):
-        super().__init__()
-        self.base_network = SqueezeNetExtractor()
-        self.psp = PyramidPoolingModule(in_channels=512, sizes=sizes)
+class PSPNet(nn.Module):
+    def __init__(self, num_class=1, sizes=(1, 2, 3, 6), base_network='resnet101'):
+        super(PSPNet, self).__init__()
+        base_network = base_network.lower()
+        if base_network == 'resnet101':
+            self.base_network = ResNet101Extractor()
+            feature_dim = 1024
+        elif base_network == 'squeezenet':
+            self.base_network = SqueezeNetExtractor()
+            feature_dim = 512
+        else:
+            raise ValueError
+        self.psp = PyramidPoolingModule(in_channels=feature_dim, sizes=sizes)
         self.drop_1 = nn.Dropout2d(p=0.3)
 
-        self.up_1 = UpsampleLayer(1024, 256)
+        self.up_1 = UpsampleLayer(2*feature_dim, 256)
         self.up_2 = UpsampleLayer(256, 64)
         self.up_3 = UpsampleLayer(64, 64)
 
@@ -99,6 +114,7 @@ class PSPNetWithSqueezeNet(nn.Module):
         p = self.drop_2(p)
 
         p = self.up_3(p)
+
         if (p.size(2) != h) or (p.size(3) != w):
             p = F.interpolate(p, size=(h, w), mode='bilinear')
 
