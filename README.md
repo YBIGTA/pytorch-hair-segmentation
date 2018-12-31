@@ -66,8 +66,8 @@ python3 evaluate.py \
 ### Sample visualization
 * Red: GT / Blue: Segmentation Map
 
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_0.png' alt='sample_0' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_1.png' alt='sample_1' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_2.png' alt='sample_2' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_3.png' alt='sample_3' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation'><img src='assets/imgs/sample_4.png' alt='sample_4' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_0.png'><img src='assets/imgs/sample_0.png' alt='sample_0' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_1.png'><img src='assets/imgs/sample_1.png' alt='sample_1' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_2.png'><img src='assets/imgs/sample_2.png' alt='sample_2' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_3.png'><img src='assets/imgs/sample_3.png' alt='sample_3' width=512 height=256 /></a>
+<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_4.png'><img src='assets/imgs/sample_4.png' alt='sample_4' width=512 height=256 /></a>
