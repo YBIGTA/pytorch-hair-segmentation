@@ -11,13 +11,14 @@ def check_mkdir(path):
         os.mkdir(path)
 
 
-def update_state(weight, train_loss, val_pix_acc, val_loss, val_iou):
+def update_state(weight, train_loss, val_pix_acc, val_loss, val_iou, val_f1):
     state = {
         'weight': weight,
         'train_loss': train_loss,
         'val_loss': val_loss,
         'val_pix_acc': val_pix_acc,
-        'val_iou': val_iou
+        'val_iou': val_iou,
+        'val_f1': val_f1
     }
     return state
 

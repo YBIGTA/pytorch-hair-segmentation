@@ -29,7 +29,7 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
 
     from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
     from ignite.metrics import Loss
-    from utils.metrics import Accuracy, IoU, F1score
+    from utils.metrics import MultiThresholdMeasures, Accuracy, IoU, F1score
 
     # device
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -99,18 +99,19 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
 
     # build trainer / evaluator with ignite
     trainer = create_supervised_trainer(model, model_optimizer, loss, device=device)
-
+    measure = MultiThresholdMeasures()
     evaluator = create_supervised_evaluator(model,
                                             metrics={
-                                                'pix-acc': Accuracy(),
-                                                'iou': IoU(0.5),
+                                                '': measure,
+                                                'pix-acc': Accuracy(measure),
+                                                'iou': IoU(measure),
                                                 'loss': Loss(loss),
-                                                'f1': F1score()
+                                                'f1': F1score(measure),
                                                 },
                                             device=device)
 
     # initialize state variable for checkpoint
-    state = update_state(model.state_dict(), 0, 0, 0, 0)
+    state = update_state(model.state_dict(), 0, 0, 0, 0, 0)
 
     # make ckpt path
     ckpt_root = './ckpt/'
@@ -131,15 +132,16 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
         # evaluate on training set
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
-        logger.info("Training Results - Epoch: {} Avg-loss: {:.3f} Pix-acc: {:.3f} IoU: {:.3f} F1: {}".format(
-            trainer.state.epoch, metrics['loss'], metrics['pix-acc'], metrics['iou'], str(metrics['f1'])))
+        logger.info("Training Results - Epoch: {} Avg-loss: {:.3f}\n Pix-acc: {}\n IoU: {}\n F1: {}\n".format(
+            trainer.state.epoch, metrics['loss'], str(metrics['pix-acc']), str(metrics['iou']), str(metrics['f1'])))
 
         # update state
         update_state(weight=model.state_dict(),
                      train_loss=metrics['loss'],
                      val_loss=state['val_loss'],
                      val_pix_acc=state['val_pix_acc'],
-                     val_iou=state['val_iou'])
+                     val_iou=state['val_iou'],
+                     val_f1=state['val_f1'])
 
     # execution after every epoch
     @trainer.on(Events.EPOCH_COMPLETED)
@@ -147,8 +149,8 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
         # evaluate test(validation) set
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
-        logger.info("Validation Results - Epoch: {} Avg-loss: {:.2f} Pix-acc: {:.2f} IoU: {:.3f} F1: {}".format(
-            trainer.state.epoch, metrics['loss'], metrics['pix-acc'], metrics['iou'], str(metrics['f1'])))
+        logger.info("Validation Results - Epoch: {} Avg-loss: {:.3f}\n Pix-acc: {}\n IoU: {}\n F1: {}\n".format(
+            trainer.state.epoch, metrics['loss'], str(metrics['pix-acc']), str(metrics['iou']), str(metrics['f1'])))
 
         # update scheduler
         lr_scheduler.step(metrics['loss'])
@@ -158,7 +160,8 @@ def train_with_ignite(networks, dataset, data_dir, batch_size, img_size,
                      train_loss=state['train_loss'],
                      val_loss=metrics['loss'],
                      val_pix_acc=metrics['pix-acc'],
-                     val_iou=metrics['iou'])
+                     val_iou=metrics['iou'],
+                     val_f1=metrics['f1'])
 
         path = ckpt_path.format(network=networks,
                                 optimizer=optimizer,
