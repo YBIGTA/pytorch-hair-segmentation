@@ -12,7 +12,7 @@ from networks import get_network
 from data import get_loader
 import torchvision.transforms as std_trnsf
 from utils import joint_transforms as jnt_trnsf
-from utils.metrics import IoU, F1score, DiceCoef
+from utils.metrics import MultiThresholdMeasures
 
 def str2bool(s):
     return s.lower() in ('t', 'true', 1)
@@ -42,7 +42,6 @@ if __name__ == '__main__':
     assert os.path.exists(ckpt_dir)
     assert os.path.exists(data_dir)
     assert os.path.exists(os.path.split(save_dir)[0])
-    assert network in ('deeplabv3plus', 'pspnet_resnet101', 'pspnet_squeezenet' 'mobilenet')
 
     if not os.path.exists(save_dir):
             os.mkdir(save_dir)
@@ -78,13 +77,8 @@ if __name__ == '__main__':
                              num_workers=4)
 
     # prepare measurements
-    metric_iou = IoU()
-    metric_iou.reset()
-    metric_f = F1score()
-    metric_f.reset()
-    metric_dice = DiceCoef()
-    metric_dice.reset()
-
+    metric = MultiThresholdMeasures()
+    metric.reset()
     durations = list()
 
     # prepare images
@@ -129,21 +123,19 @@ if __name__ == '__main__':
         image_n = image_n * 0.5 +  mask_n * 0.5
 
         # log measurements
-        metric_iou.update((logit, label))
-        metric_f.update((logit, label))
-        metric_dice.update((logit, label))
+        metric.update((logit, label))
         durations.append(duration)
 
         # write overlay image
         cv2.imwrite(path,image_n)
 
     # compute measurements
-    iou = metric_iou.compute()
-    f = metric_f.compute()
-    dice = metric_dice.compute()
+    iou = metric.compute_iou()
+    f = metric.compute_f1()
+    acc = metric.compute_accuracy()
     avg_fps = len(durations)/sum(durations)
 
     print('Avg-FPS:', avg_fps)
-    print('F-measure:', f)
+    print('Pixel-acc:', acc)
+    print('F1-score:', f)
     print('IOU:', iou)
-    print('Dice Coef:', dice)
