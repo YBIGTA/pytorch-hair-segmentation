@@ -56,11 +56,11 @@ python3 evaluate.py \
 
 ### Evaluation result on figaro testset
 
-|       Model      | IoU | Dice Coefficient |
-|       ---        | --- |        ---       |
-| pspnet_resnet101 | 0.92|       0.96       |
-| pspnet_squeezenet| 0.88|       0.91       |
-|   deeplabv3plus  | 0.80|       0.89       |
+|       Model      | IoU | F1-score |
+|       ---        | --- |    ---   |
+| pspnet_resnet101 | 0.92|   0.96   |
+| pspnet_squeezenet| 0.88|   0.91   |
+|   deeplabv3plus  | 0.80|   0.89   |
 
 
 ### Sample visualization
