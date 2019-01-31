@@ -3,6 +3,15 @@ Implementation of pytorch semantic segmentation with [figaro-1k](http://projects
 
 - tutorial document : https://pytorchhair.gitbook.io/project/ (kor)
 
+### Prerequisites
+```
+opencv-contrib-python 3.4.4
+pytorch 0.4.1
+numpy 1.14.5
+git-lfs 2.3.4 (to download uploaded model files)
+```
+
+
 ### Downloading dataset
 ```bash
 # specify a directory for dataset to be downloaded into, else default is ./data/
