@@ -83,51 +83,52 @@ if __name__ == '__main__':
 
     # prepare images
     imgs = [os.path.join(img_dir, k) for k in sorted(os.listdir(img_dir)) if k.endswith('.jpg')]
+    with torch.no_grad():
+        for i, (data, label) in enumerate(test_loader):
+            print('[{:3d}/{:3d}] processing image... '.format(i+1, len(test_loader)))
+            net.eval()
+            data, label = data.to(device), label.to(device)
 
-    for i, (data, label) in enumerate(test_loader):
-        print('[{:3d}/{:3d}] processing image... '.format(i+1, len(test_loader)))
-        net.eval()
-        data, label = data.to(device), label.to(device)
+            # inference
+            start = time.time()
+            logit = net(data)
+            duration = time.time() - start
 
-        # inference
-        start = time.time()
-        logit = net(data)
-        duration = time.time() - start
+            # prepare mask
+            pred = torch.sigmoid(logit.cpu())[0][0].data.numpy()
+            mh, mw = data.size(2), data.size(3)
+            mask = pred >= 0.5
 
-        # prepare mask
-        pred = torch.sigmoid(logit.cpu())[0][0].data.numpy()
-        mh, mw = data.size(2), data.size(3)
-        mask = pred >= 0.5
+            mask_n = np.zeros((mh, mw, 3))
+            mask_n[:,:,0] = 255
+            mask_n[:,:,0] *= mask
 
-        mask_n = np.zeros((mh, mw, 3))
-        mask_n[:,:,0] = 255
-        mask_n[:,:,0] *= mask
+            path = os.path.join(save_dir, "figaro_img_%04d.png" % i)
+            image_n = cv2.imread(imgs[i])
 
-        path = os.path.join(save_dir, "figaro_img_%04d.png" % i)
-        image_n = cv2.imread(imgs[i])
+            # discard padded area
+            ih, iw, _ = image_n.shape
 
-        # discard padded area
-        ih, iw, _ = image_n.shape
+            delta_h = mh - ih
+            delta_w = mw - iw
 
-        delta_h = mh - ih
-        delta_w = mw - iw
+            top = delta_h // 2
+            bottom = mh - (delta_h - top)
+            left = delta_w // 2
+            right = mw - (delta_w - left)
 
-        top = delta_h // 2
-        bottom = mh - (delta_h - top)
-        left = delta_w // 2
-        right = mw - (delta_w - left)
+            mask_n = mask_n[top:bottom, left:right, :]
 
-        mask_n = mask_n[top:bottom, left:right, :]
+            # addWeighted
+            image_n = image_n * 0.5 +  mask_n * 0.5
 
-        # addWeighted
-        image_n = image_n * 0.5 +  mask_n * 0.5
+            # log measurements
+            metric.update((logit, label))
+            durations.append(duration)
 
-        # log measurements
-        metric.update((logit, label))
-        durations.append(duration)
+            # write overlay image
+            cv2.imwrite(path,image_n)
 
-        # write overlay image
-        cv2.imwrite(path,image_n)
 
     # compute measurements
     iou = metric.compute_iou()
