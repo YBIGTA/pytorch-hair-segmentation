@@ -4,6 +4,11 @@ from torch import nn
 from torchvision.models import squeezenet1_1, resnet101
 from torch.nn.init import xavier_normal_
 
+"""
+Referenced from https://github.com/Lextal/pspnet-pytorch/blob/master/pspnet.py
+"""
+
+
 class ResNet101Extractor(nn.Module):
     def __init__(self):
         super(ResNet101Extractor, self).__init__()

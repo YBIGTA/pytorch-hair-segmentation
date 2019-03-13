@@ -6,13 +6,14 @@ from torch.utils.data import Dataset
 
 class LfwDataset(Dataset):
     def __init__(self, root_dir, train=True, joint_transforms=None,
-                 image_transforms=None, mask_transforms=None):
+                 image_transforms=None, mask_transforms=None, gray_image=False):
         """
         Args:
             root_dir (str): root directory of dataset
             joint_transforms (torchvision.transforms.Compose): tranformation on both data and target
             image_transforms (torchvision.transforms.Compose): tranformation only on data
             mask_transforms (torchvision.transforms.Compose): tranformation only on target
+            gray_image (bool): True if to add gray images
         """
 
         txt_file = 'parts_train_val.txt' if train else 'parts_test.txt'
@@ -26,6 +27,7 @@ class LfwDataset(Dataset):
         self.joint_transforms = joint_transforms
         self.image_transforms = image_transforms
         self.mask_transforms = mask_transforms
+        self.gray_image = gray_image
 
     def __getitem__(self, idx):
         img_path = self.img_path_list[idx]
@@ -43,6 +45,11 @@ class LfwDataset(Dataset):
 
         if self.mask_transforms is not None:
             mask = self.mask_transforms(mask)
+
+        if self.gray_image:
+            gray = img.convert('L')
+            gray = np.array(gray,dtype=np.float32)[np.newaxis,]/255
+            return img, mask, gray
 
         return img, mask
 
