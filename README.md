@@ -7,6 +7,7 @@ Implementation of pytorch semantic segmentation with [figaro-1k](http://projects
 ```
 opencv-contrib-python 3.4.4
 pytorch 0.4.1
+torchvision 0.2.1
 numpy 1.14.5
 git-lfs 2.3.4 (to download uploaded model files)
 ```
