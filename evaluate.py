@@ -134,7 +134,7 @@ if __name__ == '__main__':
     iou = metric.compute_iou()
     f = metric.compute_f1()
     acc = metric.compute_accuracy()
-    avg_fps = len(durations)/sum(durations)
+    avg_fps = sum(durations)/len(durations)
 
     print('Avg-FPS:', avg_fps)
     print('Pixel-acc:', acc)
