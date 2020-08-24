@@ -9,7 +9,6 @@ opencv-contrib-python 3.4.4
 pytorch 0.4.1
 torchvision 0.2.1
 numpy 1.14.5
-git-lfs 2.3.4 (to download uploaded model files)
 ```
 
 
@@ -57,7 +56,7 @@ python3 main.py \
 
 python3 evaluate.py \
   --networks pspnet_resnet101 \
-  --ckpt_dir ./models/pspnet_resnet101_sgd_lr_0.002_epoch_100_test_iou_0.918.pth \
+  --ckpt_dir [path to checkpoint] \
   --dataset figaro \
   --data_dir ./data/Figaro1k \
   --save_dir ./overlay/ \
@@ -66,11 +65,11 @@ python3 evaluate.py \
 
 ### Evaluation result on figaro testset
 
-|       Model      | IoU | F1-score |
-|       ---        | --- |    ---   |
-| pspnet_resnet101 | 0.92|   0.96   |
-| pspnet_squeezenet| 0.88|   0.91   |
-|   deeplabv3plus  | 0.80|   0.89   |
+|       Model      | IoU | F1-score |      Checkpoint      |
+|       ---        | --- |    ---   |          ---         |
+| pspnet_resnet101 | 0.92|   0.96   | [link](https://drive.google.com/file/d/1Y9XK9135awVBrC950wrZQt3jmgq1uOFd/view?usp=sharing)
+| pspnet_squeezenet| 0.88|   0.91   | [link](https://drive.google.com/file/d/1C6fLudnxv1jmYOqJUaXJIbbup2pvCQjW/view?usp=sharing) |
+|   deeplabv3plus  | 0.80|   0.89   |   - |
 
 
 ### Sample visualization
