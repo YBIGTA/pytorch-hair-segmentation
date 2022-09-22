@@ -67,8 +67,8 @@ python3 evaluate.py \
 
 |       Model      | IoU | F1-score |      Checkpoint      |
 |       ---        | --- |    ---   |          ---         |
-| pspnet_resnet101 | 0.92|   0.96   | [link](https://drive.google.com/file/d/1Y9XK9135awVBrC950wrZQt3jmgq1uOFd/view?usp=sharing)
-| pspnet_squeezenet| 0.88|   0.91   | [link](https://drive.google.com/file/d/1C6fLudnxv1jmYOqJUaXJIbbup2pvCQjW/view?usp=sharing) |
+| pspnet_resnet101 | 0.92|   0.96   | [link](https://drive.google.com/file/d/1w7oMuxckqEClImjLFTH7xBCpm1wg7Eg4/view?usp=sharing)
+| pspnet_squeezenet| 0.88|   0.91   | [link](https://drive.google.com/file/d/1ieKvsK3uoDZN0vA5MenQphca4AZZuaPk/view?usp=sharing) |
 |   deeplabv3plus  | 0.80|   0.89   |   - |
 
 
