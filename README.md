@@ -75,8 +75,8 @@ python3 evaluate.py \
 ### Sample visualization
 * Red: GT / Blue: Segmentation Map
 
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_0.png'><img src='assets/imgs/sample_0.png' alt='sample_0' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_1.png'><img src='assets/imgs/sample_1.png' alt='sample_1' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_2.png'><img src='assets/imgs/sample_2.png' alt='sample_2' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_3.png'><img src='assets/imgs/sample_3.png' alt='sample_3' width=512 height=256 /></a>
-<a href='https://github.com/YBIGTA/pytorch-hair-segmentation/blob/master/assets/imgs/sample_4.png'><img src='assets/imgs/sample_4.png' alt='sample_4' width=512 height=256 /></a>
+![sample_0](https://user-images.githubusercontent.com/19547969/227229779-28b42d02-efad-4b7b-be65-3cf3a1a7bfef.png)
+![sample_1](https://user-images.githubusercontent.com/19547969/227229796-5de39ea1-73fe-4be8-9ef7-2857df54b94c.png)
+![sample_2](https://user-images.githubusercontent.com/19547969/227229856-e224b91c-6fb2-4aa8-a93f-6ab1edfe568b.png)
+![sample_3](https://user-images.githubusercontent.com/19547969/227229883-ff4b05e7-ba23-42c9-9dec-a431bf0715f1.png)
+![sample_4](https://user-images.githubusercontent.com/19547969/227229909-68b6cdf1-6f89-4cf9-a2f8-01be251dd140.png)
